@@ -1,0 +1,2 @@
+- v0.0.1:
+    - The engine seems to hit a memory leak or recursion issue around 4k-7k turns eating up vast amounts of memory.
