@@ -1,7 +1,7 @@
 from copy import deepcopy
-from chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
+from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 
-RANK_IDX = {
+FILE_IDX = {
     "a": 0,
     "b": 1,
     "c": 2,
@@ -11,7 +11,7 @@ RANK_IDX = {
     "g": 6,
     "h": 7,
 }
-RANK_NAME = {
+FILE_NAME = {
     0: "a",
     1: "b",
     2: "c",
@@ -21,25 +21,25 @@ RANK_NAME = {
     6: "g",
     7: "h",
 }
-FILE_IDX = {
-    "1": 0,
-    "2": 1,
-    "3": 2,
-    "4": 3,
-    "5": 4,
-    "6": 5,
-    "7": 6,
-    "8": 7,
+RANK_IDX = {
+    "1": 7,
+    "2": 6,
+    "3": 5,
+    "4": 4,
+    "5": 3,
+    "6": 2,
+    "7": 1,
+    "8": 0,
 }
-FILE_NAME = {
-    0: "1",
-    1: "2",
-    2: "3",
-    3: "4",
-    4: "5",
-    5: "6",
-    6: "7",
-    7: "8",
+RANK_NAME = {
+    0: "8",
+    1: "7",
+    2: "6",
+    3: "5",
+    4: "4",
+    5: "3",
+    6: "2",
+    7: "1",
 }
 PIECE_NOTATION = {
     Pawn: "",
@@ -50,7 +50,6 @@ PIECE_NOTATION = {
     King: "K"
 }
 PIECE_NAME = {
-    "": Pawn,
     "B": Bishop,
     "N": Knight,
     "R": Rook,
@@ -133,6 +132,17 @@ class GameState:
         self.update_legal_moves()
 
         # TODO: Add castle rights and en passant logic
+    
+    def re_ambiguate_moves(self, moveset: dict) -> dict:
+        # TODO
+        ambiguated_move_set_dict = {}
+
+        temp_dict = {}
+        for move in moveset.keys():
+            if move[0].isupper():
+               temp_dict[move[0]] = move
+
+        return ambiguated_move_set_dict
 
 
 class ChessBoard:
@@ -206,6 +216,12 @@ class ChessBoard:
         standard_board[-1][4][PIECE_IDX[King]] = 1
         return standard_board
 
+    def empty_board(self) -> None:
+        self.board = [[[0] * 6 for _i in range(8)] for _j in range(8)]
+
+    def add_piece(self, notation: str, piece: type, player: int):
+        self.board[RANK_IDX[notation[1]]][FILE_IDX[notation[0]]][PIECE_IDX[piece]] = player
+
     def piece_on(self, board, rank, file) -> type:
         piece_id = next((index for index, value in enumerate(board[rank][file]) if value != 0), -1)
         return PIECE_TYPE.get(piece_id, None)
@@ -239,7 +255,6 @@ class ChessBoard:
     def get_pawn_promotions(self, base_notation, current_board, rank, file, player):
         # Assumes the movement to the promotion square is legal and the pawn is already removed from current_board
         new_rank = rank - player
-        base_notation += "="
         promotion_moves = {}
         for i in range(4):
             new_state = deepcopy(current_board)
@@ -266,9 +281,9 @@ class ChessBoard:
             castle_check_board.board[rank][file][PIECE_IDX[King]] = player
         would_cause_check = castle_check_board.in_check(player)
 
-        return not would_cause_check
-
-    def legal_moves(self, player, en_passant_tile: list=[], castle_rights: list=[]) -> dict:
+        return not would_cause_check           
+            
+    def legal_moves(self, player: int, en_passant_tile: list=[], castle_rights: list=[]) -> dict:
         # For all pieces controlled by the given player
         all_moves = {}
 
@@ -377,13 +392,16 @@ class ChessBoard:
                     # Make the move
                     take_string = move_from
                     new_state = deepcopy(new_state_wo_piece)
+
+                    # If it's a capture break
                     if sum(new_state[row][col]) == -player:
                         new_state[row][col] = [0] * 6  # Remove all pieces from the landed position
-                        take_string += "x"
+                        new_state[row][col][piece_id] = player
+                        all_moves[take_string + "x" + FILE_NAME[col] + RANK_NAME[row]] = ChessBoard(new_state)
+                        break
+
                     new_state[row][col][piece_id] = player
                     all_moves[take_string + FILE_NAME[col] + RANK_NAME[row]] = ChessBoard(new_state)
         
-        legal_moves = [move for move, board in all_moves.items if not board.in_check(player)]
-        
-        # TODO: run re-ambiguation on legal_moves to re-key them
+        legal_moves = [move for move, board in all_moves.items() if not board.in_check(player)]
         return {move: all_moves[move] for move in legal_moves}
