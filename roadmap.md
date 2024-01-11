@@ -3,6 +3,7 @@
 This is just a place for me to mess around with python, ML, and code performance evaluation right now the rough road map is:
 - Get a decent engine with stock python. No numpy, I want to really see what I can push out of stock python:
     - Algebriac notation
+        - Need to do disambiguating move logic
         - I/O will let me interface with other chess bots fairly easily
         - Allows of unit tests to make sure the engine doesn't have any weird bugs
     - Get some base-line performance numbers for for future performance testing
@@ -15,4 +16,6 @@ This is just a place for me to mess around with python, ML, and code performance
     - Perform gradient descent steps until a plateau is reached
     - Evaluate the bot's performance against stockfish on different settings
 
-- More advanced work to come
+Performance Work:
+- Game Trees
+- Zorbist hashing

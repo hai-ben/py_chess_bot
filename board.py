@@ -92,18 +92,55 @@ ASCII_LOOKUP_BLACK = {
 LIGHT_TILE = "□"
 DARK_TILE = "■"
 
-class ChessBoard:
-    def __init__(self, player_turn=1, last_turn=None, board=None, wrcs=True, wrcl=True, brcs=True, brcl=True) -> None:
-        # 6 piece types, on an 8x8 board from white's perspective (black on top)
-        # pawn, bishop, knight, rook, queen, king
-        # 1 represents a white piece, -1 is black
-        self.player_turn = player_turn
-        self.board = board or [[[0] * 6 for _i in range(8)] for _j in range(8)]
-        self.last_turn = last_turn or deepcopy(self.board)
+
+class GameState:
+    def __init__(self, notation: str="", wrcs: bool=True, wrcl: bool=True, brcs: bool=True, brcl: bool=True) -> None:
+        self.current_state = ChessBoard()
+        self.last_state = None
+        self.player_turn = 1
+        self.legal_moves = {}
+        self.update_legal_moves()
+        self.turn_number = 1
+        self.notation_string = notation
+        if notation:
+            self.run_game()
+        else:
+            self.notation_string = f"{self.turn_number}. "
         self.wrcs = wrcs  # White right to castle short
         self.wrcl = wrcl  # White right to castle long
         self.brcs = brcs  # Black right to castle short
         self.brcl = brcl  # Black right to castle long
+        self.en_passant_tile = []
+    
+    def run_game(self, notation_string):
+        pass
+    
+    def update_legal_moves(self):
+        pass
+
+    def make_move(self, move) -> None:
+        # Update the turn and notation
+        self.player_turn = -self.player_turn
+        if self.player_turn == 1:
+            self.turn_number += 1
+            self.notation_string += f"{self.turn_number}. "
+        self.notation_string += f"{move} "
+
+        # Update the state of the boards and legal moves
+        self.last_turn = self.board
+        self.board = self.legal_moves[move]
+        self.legal_moves = {}
+        self.update_legal_moves()
+
+        # TODO: Add castle rights and en passant logic
+
+
+class ChessBoard:
+    def __init__(self, board=None) -> None:
+        # 6 piece types, on an 8x8 board from white's perspective (black on top)
+        # pawn, bishop, knight, rook, queen, king
+        # 1 represents a white piece, -1 is black
+        self.board = board or self.standard_setup()
         self.iter_counter = 0  # Used for iterating over every tile
     
     def __str__(self):
@@ -133,48 +170,45 @@ class ChessBoard:
         else:
             raise StopIteration
     
-    def standard_setup(self) -> None:
-        # Pawns, black is at the top
-        self.board = [[[0] * 6 for _i in range(8)] for _j in range(8)]
-
+    def standard_setup(self) -> list:
+        # Black is at the top
+        standard_board = [[[0] * 6 for _i in range(8)] for _j in range(8)]
+        
+        # Pawns
         for i in range(8):
-            self.board[1][i][PIECE_IDX[Pawn]] = -1
-            self.board[-2][i][PIECE_IDX[Pawn]] = 1
+            standard_board[1][i][PIECE_IDX[Pawn]] = -1
+            standard_board[-2][i][PIECE_IDX[Pawn]] = 1
 
         # Bishops
-        self.board[0][2][PIECE_IDX[Bishop]] = -1
-        self.board[0][-3][PIECE_IDX[Bishop]] = -1
-        self.board[-1][2][PIECE_IDX[Bishop]] = 1
-        self.board[-1][-3][PIECE_IDX[Bishop]] = 1
+        standard_board[0][2][PIECE_IDX[Bishop]] = -1
+        standard_board[0][-3][PIECE_IDX[Bishop]] = -1
+        standard_board[-1][2][PIECE_IDX[Bishop]] = 1
+        standard_board[-1][-3][PIECE_IDX[Bishop]] = 1
 
         # Knights
-        self.board[0][1][PIECE_IDX[Knight]] = -1
-        self.board[0][-2][PIECE_IDX[Knight]] = -1
-        self.board[-1][1][PIECE_IDX[Knight]] = 1
-        self.board[-1][-2][PIECE_IDX[Knight]] = 1
+        standard_board[0][1][PIECE_IDX[Knight]] = -1
+        standard_board[0][-2][PIECE_IDX[Knight]] = -1
+        standard_board[-1][1][PIECE_IDX[Knight]] = 1
+        standard_board[-1][-2][PIECE_IDX[Knight]] = 1
 
         # Rooks
-        self.board[0][0][PIECE_IDX[Rook]] = -1
-        self.board[0][-1][PIECE_IDX[Rook]] = -1
-        self.board[-1][0][PIECE_IDX[Rook]] = 1
-        self.board[-1][-1][PIECE_IDX[Rook]] = 1
+        standard_board[0][0][PIECE_IDX[Rook]] = -1
+        standard_board[0][-1][PIECE_IDX[Rook]] = -1
+        standard_board[-1][0][PIECE_IDX[Rook]] = 1
+        standard_board[-1][-1][PIECE_IDX[Rook]] = 1
 
         # Queens
-        self.board[0][3][PIECE_IDX[Queen]] = -1
-        self.board[-1][3][PIECE_IDX[Queen]] = 1
+        standard_board[0][3][PIECE_IDX[Queen]] = -1
+        standard_board[-1][3][PIECE_IDX[Queen]] = 1
 
         # Kings
-        self.board[0][4][PIECE_IDX[King]] = -1
-        self.board[-1][4][PIECE_IDX[King]] = 1
+        standard_board[0][4][PIECE_IDX[King]] = -1
+        standard_board[-1][4][PIECE_IDX[King]] = 1
+        return standard_board
 
-    def next_turn_with(self, new_board, previous_board=None):
-        return ChessBoard(-self.player_turn,
-                          previous_board or deepcopy(self.board),
-                          deepcopy(new_board),
-                          self.wrcs,
-                          self.wrcl,
-                          self.brcs,
-                          self.brcl)
+    def piece_on(self, board, rank, file) -> type:
+        piece_id = next((index for index, value in enumerate(board[rank][file]) if value != 0), -1)
+        return PIECE_TYPE.get(piece_id, None)
 
     def in_check(self, player: int) -> bool:
         # Check all pieces not controlled by the given player
@@ -200,25 +234,21 @@ class ChessBoard:
                     # If the attack runs into a piece try the next vector
                     if any(self.board[row][col]):
                         break
-        
         return False
 
-    def possible_pawn_promotions(self, previous_board, rank, file, player):
-        # Assumes the promotion square is either attackable or move-to-able on the file
-        promotions = []
+    def get_pawn_promotions(self, base_notation, current_board, rank, file, player):
+        # Assumes the movement to the promotion square is legal and the pawn is already removed from current_board
+        new_rank = rank - player
+        base_notation += "="
+        promotion_moves = {}
         for i in range(4):
-            promotions.append(self.next_turn_with(self.board, previous_board))
-            promotions[-1].board[rank - player][file] = [0] * 6  # Remove the defending piece from the future move
-            promotions[-1].board[rank - player][file][i + 1] = player  # [i+1] determines promotion type
-        return promotions
+            new_state = deepcopy(current_board)
+            new_state[new_rank][file] = [0] * 6  # Remove the defending piece from the future move if there is one
+            new_state[new_rank][file][i + 1] = player  # [i+1] determines promotion type
+            promotion_moves[base_notation + PIECE_NOTATION[PIECE_TYPE[i + 1]]] = ChessBoard(new_state)
+        return promotion_moves
 
-    def advance_pawn(self, previous_board, rank, file, player):
-        new_board = self.next_turn_with(self.board, previous_board)
-        new_board.board[rank - player][file] = [0] * 6  # Remove the defending piece from the future move
-        new_board.board[rank - player][file][PIECE_IDX[Pawn]] = player
-        return new_board
-
-    def check_castle_legal(self, player, mode="short") -> bool:
+    def castle_legal(self, player: int, mode:str="short") -> bool:
         rank = 0 if player == -1 else 7
         empty_files = [1, 2, 3] if mode == "long" else [5, 6]
 
@@ -230,137 +260,108 @@ class ChessBoard:
         if any([sum(self.board[rank][col]) != 0 for col in empty_files]):
             return False
         
-        # If the player would be in check if they move their king along those spaces
-        old_board = deepcopy(self.board)
-
         # Add kings to the empty files, if any are in check then the castle is illegal
+        castle_check_board = ChessBoard(deepcopy(self.board))
         for file in empty_files:
-            self.board[rank][file][PIECE_IDX[King]] = player
-        would_cause_check = self.in_check(player)
+            castle_check_board.board[rank][file][PIECE_IDX[King]] = player
+        would_cause_check = castle_check_board.in_check(player)
 
-        # Put the board back
-        self.board = old_board
         return not would_cause_check
 
-    def legal_moves(self, player: int):
-        if player != 1 and player != -1:
-            raise ValueError("please specify a turn!")
-        
-        future_moves = []
-
+    def legal_moves(self, player, en_passant_tile: list=[], castle_rights: list=[]) -> dict:
         # For all pieces controlled by the given player
-        for rank, file, piece_id, controlled_by in self:
-            # TODO: Change castling rights if king or rook moved
+        all_moves = {}
 
+        for rank, file, piece_id, controlled_by in self:
             if controlled_by != player:
                 continue
-            
+
             piece_type = PIECE_TYPE[piece_id]
+            move_string = ""
     
             # Special rules for pawns: en passant, promotion, double moves
             if piece_type == Pawn:
+                move_string += f"{FILE_NAME[file]}"
+                new_rank = rank - player
                 on_home_rank = (rank == 1) if (player == -1) else (rank == 6)
-                promotes_on_next_rank = (rank - player == 0) or (rank - player == 7)
-
-                # Make a copy of this board and then remove the pawn from it for ease
-                this_turn = deepcopy(self.board)
-                self.board[rank][file][PIECE_IDX[Pawn]] = 0
-
-                # Check left attack
-                if file > 0:
-                    # If the left attack square is controlled by the opposite player
-                    if sum(self.board[rank - player][file - 1]) == -player:
-                        if promotes_on_next_rank:
-                            future_moves.extend(self.possible_pawn_promotions(this_turn, rank, file - 1, player))
-                        else:
-                            future_moves.append(self.advance_pawn(this_turn, rank, file - 1, player))
+                promotes_on_next_rank = (new_rank == 0) or (new_rank == 7)
                 
-                # Check right attack
-                if file < 7:
-                    # If the right attack square is controlled by the opposite player
-                    if sum(self.board[rank - player][file + 1]) == -player:
-                        if promotes_on_next_rank:
-                            future_moves.extend(self.possible_pawn_promotions(this_turn, rank, file + 1, player))
-                        else:
-                            future_moves.append(self.advance_pawn(this_turn, rank, file + 1, player))
+                # Make a copy of this board and then remove the pawn from it for ease in the future
+                state_without_pawn = deepcopy(self.board)
+                state_without_pawn[rank][file][PIECE_IDX[Pawn]] = 0
 
-                # Check forward moves, if the square in front is empty
-                if sum(self.board[rank - player][file]) == 0:
+                # Check the pawn can attack something on the left
+                if file > 0 and sum(self.board[new_rank][file - 1]) == -player:
+                    take_string = f"{move_string}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"
                     if promotes_on_next_rank:
-                        future_moves.extend(self.possible_pawn_promotions(this_turn, rank, file, player))
+                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file - 1)
                     else:
-                        future_moves.append(self.advance_pawn(this_turn, rank, file, player))
+                        new_state = deepcopy(state_without_pawn)
+                        new_state[new_rank][file - 1] = [1, 0, 0, 0, 0]
+                        all_moves[take_string] = ChessBoard(new_state)
+                
+                # Check the pawn can attack something on the right
+                if file < 7 and sum(self.board[new_rank][file + 1]) == -player:
+                    take_string = f"{move_string}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"
+                    if promotes_on_next_rank:
+                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file + 1)
+                    else:
+                        new_state = deepcopy(state_without_pawn)
+                        new_state[new_rank][file + 1] = [player, 0, 0, 0, 0, 0]
+                        all_moves[take_string] = ChessBoard(new_state)
+
+                # If the square in front is empty
+                if sum(self.board[new_rank][file]) == 0:
+                    if promotes_on_next_rank:
+                        all_moves = all_moves | self.get_pawn_promotions(move_string + RANK_NAME[new_rank], state_without_pawn, rank, file)
+                    else:
+                        new_state = deepcopy(state_without_pawn)
+                        new_state[new_rank][file] = [1, 0, 0, 0, 0, 0]
+                        all_moves[move_string + RANK_NAME[new_rank]] = ChessBoard(new_state)
+
                         # Check for double Moves
-                        if on_home_rank and sum(self.board[rank - (2 * player)][file]) == 0:
-                            future_moves.append(self.advance_pawn(this_turn, rank - player, file, player))
+                        if on_home_rank and sum(self.board[new_rank - player][file]) == 0:
+                            new_state = deepcopy(state_without_pawn)
+                            new_state[new_rank - player][file] = [1, 0, 0, 0, 0, 0]
+                            all_moves[move_string + RANK_NAME[new_rank - player]] = ChessBoard(new_state)
 
-                on_en_passant_rank = (rank == 4) if (player == -1) else (rank == 3)
-                if on_en_passant_rank:
-                    # Check left that there is a pawn beside
-                    if file > 0 and self.board[rank][file - 1][PIECE_IDX[Pawn]] == -player:
-                        piece_behind_pawn = sum(self.board[rank][file - 1]) == 0
-                        was_on_home_rank = self.last_turn[rank + 2 * player][file - 1][PIECE_IDX[Pawn]] == -player
-                        home_rank_empty = sum(self.board[rank + 2 * player][file - 1]) == 0
-                        if not piece_behind_pawn and was_on_home_rank and home_rank_empty:
-                            future_moves.append(self.advance_pawn(this_turn, rank, file - 1, player))
-                            future_moves[-1].board[rank][file - 1] = [0] * 6
-                    # Check right that there is a pawn beside
-                    if file < 7 and self.board[rank][file + 1][PIECE_IDX[Pawn]] == -player:
-                        piece_behind_pawn = sum(self.board[rank][file + 1]) == 0
-                        was_on_home_rank = self.last_turn[rank + 2 * player][file + 1][PIECE_IDX[Pawn]] == -player
-                        home_rank_empty = sum(self.board[rank + 2 * player][file + 1]) == 0
-                        if not piece_behind_pawn and was_on_home_rank and home_rank_empty:
-                            future_moves.append(self.advance_pawn(this_turn, rank, file + 1, player))
-                            future_moves[-1].board[rank][file + 1] = [0] * 6
-
-                # Put the pawn back after removing it
-                self.board[rank][file][PIECE_IDX[Pawn]] = player
+                # If en_passant is an option
+                if en_passant_tile and rank == en_passant_tile[0]:
+                    if file == en_passant_tile[1] + 1:
+                        take_string = f"{move_string}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"
+                        new_state = deepcopy(state_without_pawn)
+                        new_state[new_rank][file + 1] = [1, 0, 0, 0, 0, 0]
+                        all_moves[take_string] = ChessBoard(new_state)
+                    elif file == en_passant_tile[1] - 1:
+                        take_string = f"{move_string}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"
+                        new_state = deepcopy(state_without_pawn)
+                        new_state[new_rank][file - 1] = [1, 0, 0, 0, 0, 0]
+                        all_moves[take_string] = ChessBoard(new_state)
                 continue  # Don't execute the general attack logic for pawns
             
-            # Do castling
-            if piece_type == King:
-                # White short castling
-                if player == 1:
-                    if self.wrcs and self.check_castle_legal(player, "short"):
-                        future_moves.append(self.next_turn_with(self.board))
-                        future_moves[-1].board[7][4][PIECE_IDX[King]] = 0
-                        future_moves[-1].board[7][6][PIECE_IDX[King]] = 1
-                        future_moves[-1].board[7][5][PIECE_IDX[Rook]] = 1
-                        future_moves[-1].board[7][7][PIECE_IDX[Rook]] = 0
-                        future_moves[-1].wrcs = False
-                        future_moves[-1].wrcl = False
-                    # White long castling
-                    if self.wrcl and self.check_castle_legal(player, "long"):
-                        future_moves.append(self.next_turn_with(self.board))
-                        future_moves[-1].board[7][4][PIECE_IDX[King]] = 0
-                        future_moves[-1].board[7][2][PIECE_IDX[King]] = 1
-                        future_moves[-1].board[7][3][PIECE_IDX[Rook]] = 1
-                        future_moves[-1].board[7][0][PIECE_IDX[Rook]] = 0
-                        future_moves[-1].wrcs = False
-                        future_moves[-1].wrcl = False
-                
-                else:
-                    # Black short castling
-                    if self.brcs and self.check_castle_legal(player, "short"):
-                        future_moves.append(self.next_turn_with(self.board))
-                        future_moves[-1].board[0][4][PIECE_IDX[King]] = 0
-                        future_moves[-1].board[0][6][PIECE_IDX[King]] = -1
-                        future_moves[-1].board[0][5][PIECE_IDX[Rook]] = -1
-                        future_moves[-1].board[0][7][PIECE_IDX[Rook]] = 0
-                        future_moves[-1].brcs = False
-                        future_moves[-1].brcl = False
-                    # Black long castling
-                    if self.brcl and self.check_castle_legal(player, "long"):
-                        future_moves.append(self.next_turn_with(self.board))
-                        future_moves[-1].board[0][4][PIECE_IDX[King]] = 0
-                        future_moves[-1].board[0][2][PIECE_IDX[King]] = -1
-                        future_moves[-1].board[0][3][PIECE_IDX[Rook]] = -1
-                        future_moves[-1].board[0][0][PIECE_IDX[Rook]] = 0
-                        future_moves[-1].brcs = False
-                        future_moves[-1].brcl = False
+            # Castling
+            if castle_rights and piece_type == King:
+                castle_rank = 7 if player == 1 else 0
+                if "short" in castle_rights and self.check_castle_legal(player, "short"):
+                    new_state = deepcopy(self.board)
+                    new_state[castle_rank][4][PIECE_IDX[King]] = 0
+                    new_state[castle_rank][6][PIECE_IDX[King]] = player
+                    new_state[castle_rank][5][PIECE_IDX[Rook]] = player
+                    new_state[castle_rank][7][PIECE_IDX[Rook]] = 0
+                    all_moves["O-O"] = ChessBoard(new_state)
+                if "long" in castle_rights and self.check_castle_legal(player, "long"):
+                    new_state = deepcopy(self.board)
+                    new_state[castle_rank][4][PIECE_IDX[King]] = 0
+                    new_state[castle_rank][2][PIECE_IDX[King]] = player
+                    new_state[castle_rank][3][PIECE_IDX[Rook]] = player
+                    new_state[castle_rank][0][PIECE_IDX[Rook]] = 0
+                    all_moves["O-O-O"] = ChessBoard(new_state)
 
             # Check the attack vectors of the given piece
             for vector in piece_type.ATTACK_VECTORS:
+                new_state_wo_piece = deepcopy(self.board)
+                new_state_wo_piece[rank][file][piece_id] = 0
+                move_from = f"{PIECE_NOTATION[piece_type]}{FILE_NAME[file]}{RANK_NAME[rank]}"
                 for distance in range(1, piece_type.ATTACK_RANGE + 1):
                     row = rank + distance * vector[1]
                     col = file + distance * vector[0]
@@ -374,32 +375,15 @@ class ChessBoard:
                         break
 
                     # Make the move
-                    new_board = self.next_turn_with(self.board)
-                    new_board.board[rank][file][piece_id] = 0  # Remove the piece from the old position
-                    new_board.board[row][col] = [0] * 6  # Remove all pieces from the landed position
-                    new_board.board[row][col][piece_id] = player
-
-                    # Update the castling rights, any king move revokes all
-                    if piece_type is King:
-                        if player == 1:
-                            new_board.wrcs = False
-                            new_board.wrcl = False
-                        else:
-                            new_board.brcs = False
-                            new_board.brcl = False
-                    # Otherwise a rook move will revoke on that side
-                    elif piece_type is Rook and (self.wrcs or self.wrcl) if player == 1 else (self.brcs or self.brcl):
-                        if player == 1:
-                            if file == 7:
-                                new_board.wrcs = False
-                            if file == 0:
-                                new_board.wrcl = False
-                        else:
-                            if file == 7:
-                                new_board.brcs = False
-                            if file == 0:
-                                new_board.brcl = False
-                    future_moves.append(new_board)
-        # Remove all moves that would put the player in check
-        return [move for move in future_moves if not move.in_check(player)]
-    
+                    take_string = move_from
+                    new_state = deepcopy(new_state_wo_piece)
+                    if sum(new_state[row][col]) == -player:
+                        new_state[row][col] = [0] * 6  # Remove all pieces from the landed position
+                        take_string += "x"
+                    new_state[row][col][piece_id] = player
+                    all_moves[take_string + FILE_NAME[col] + RANK_NAME[row]] = ChessBoard(new_state)
+        
+        legal_moves = [move for move, board in all_moves.items if not board.in_check(player)]
+        
+        # TODO: run re-ambiguation on legal_moves to re-key them
+        return {move: all_moves[move] for move in legal_moves}
