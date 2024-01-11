@@ -1,8 +1,6 @@
 from copy import deepcopy
 from chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 
-# TODO: Algebriac notation in/out
-
 class ChessBoard:
     PIECE_IDX = {
         Pawn: 0,
