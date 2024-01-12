@@ -53,6 +53,15 @@ def test_opening_moves(base_board):
 def test_print(base_board):
     assert str(base_board) == START_STATE
 
+
+def test_pawn_attack(base_board):
+    new_board = base_board.legal_moves(1)['e4']
+    new_board = new_board.legal_moves(-1)['d5']
+    new_board = new_board.legal_moves(1)['exd5']
+    assert (Pawn, 1) == new_board.at_notation('d5')
+    assert (None, 0) == new_board.at_notation('e4')
+
+
 class TestRook:
     EXPECTED_MOVES = set([
         'Rc4a4', 'Rc4b4', 'Rc4d4', 'Rc4e4','Rc4f4', 'Rc4g4', 'Rc4h4',

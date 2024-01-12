@@ -93,56 +93,148 @@ DARK_TILE = "■"
 
 
 class GameState:
-    def __init__(self, notation: str="", wrcs: bool=True, wrcl: bool=True, brcs: bool=True, brcl: bool=True) -> None:
-        self.current_state = ChessBoard()
-        self.last_state = None
+    def __init__(self, board=None, previous_board=None, wrcs: bool=True, wrcl: bool=True, brcs: bool=True, brcl: bool=True) -> None:
+        self.current_state = board or ChessBoard()
+        self.last_state = previous_board or ChessBoard(deepcopy(self.current_state))
         self.player_turn = 1
         self.legal_moves = {}
-        self.update_legal_moves()
-        self.turn_number = 1
-        self.notation_string = notation
-        if notation:
-            self.run_game()
-        else:
-            self.notation_string = f"{self.turn_number}. "
+        self.turn_number = 0
+        self.notation_string = ""
         self.wrcs = wrcs  # White right to castle short
         self.wrcl = wrcl  # White right to castle long
         self.brcs = brcs  # Black right to castle short
         self.brcl = brcl  # Black right to castle long
         self.en_passant_tile = []
+        self.update_legal_moves()
     
-    def run_game(self, notation_string):
-        pass
-    
-    def update_legal_moves(self):
-        pass
+    def __str__(self):
+        return str(self.current_state)
 
-    def make_move(self, move) -> None:
+    def __iter__(self):
+        return self.current_state.__iter__()
+    
+    def __next__(self):
+        return self.current_state.__next__()
+
+    def run_game(self, notation_string: str):
+        moves = notation_string.replace("\n", " ").replace(".", ". ")
+        while "  " in moves:
+            moves = moves.replace("  ", " ")
+        moves = moves.strip(" ").split(" ")
+
+        for move in moves:
+            # Skip the move if it's a turn marker
+            if "." in move:
+                continue
+            # This is the end of game marker
+            if ("1" in move or "½" in move) and "-" in move:
+                self.notation_string += move
+                break
+            self.make_move(move)
+    
+    def castle_rights(self):
+        castle_rights = []
+        if self.player_turn == 1:
+            if self.wrcs:
+                castle_rights.append("short")
+            if self.wrcl:
+                castle_rights.append("long")
+        if self.player_turn == -1:
+            if self.brcs:
+                castle_rights.append("short")
+            if self.brcl:
+                castle_rights.append("long")
+        return castle_rights
+
+    def update_legal_moves(self):
+        self.legal_moves =\
+            self.current_state.legal_moves(self.player_turn,
+                                           self.en_passant_tile,
+                                           self.castle_rights())
+
+    def make_move(self, move: str) -> None:
         # Update the turn and notation
-        self.player_turn = -self.player_turn
         if self.player_turn == 1:
             self.turn_number += 1
             self.notation_string += f"{self.turn_number}. "
+        self.player_turn = -self.player_turn
         self.notation_string += f"{move} "
 
         # Update the state of the boards and legal moves
-        self.last_turn = self.board
-        self.board = self.legal_moves[move]
+        self.last_state = self.current_state
+        translated_move = self.find_ambigous_move(move)
+        self.current_state = self.legal_moves[translated_move]
         self.legal_moves = {}
+
+        # Remove castle rights after a castle or king move
+        if "K" in move or "O" in move:
+            # Flipped because this code is after the player turn changover logic
+            if self.player_turn == -1:
+                self.wrcs = False
+                self.wrcl = False
+            else:
+                self.brcs = False
+                self.brcl = False
+
+        # Remove castle rights after a rook move
+        if self.wrcl and "Ra1" == translated_move[:3]:
+            self.wrcl = False
+        elif self.wrcs and "Rh1" == translated_move[:3]:
+            self.wrcs = False
+        elif self.brcl and "Ra8" == translated_move[:3]:
+            self.brcl = False
+        elif self.brcs and "Rh8" == translated_move[:3]:
+            self.brcs = False
+
+        # If the move is a pawn, onto an en-passantable square for that player
+        
+        if move[0].islower()\
+            and ((self.player_turn == -1 and move[1:] == "4")\
+                 or (self.player_turn == 1 and move[1:] == "5")):
+            # The tile behind was empty last turn and the tile behind that had a pawn last turn
+            one_tile_behind = self.last_state.board[RANK_IDX[move[1]] - self.player_turn][FILE_IDX[move[0]]]
+            two_tile_behind = self.last_state.board[RANK_IDX[move[1]] - (2 * self.player_turn)][FILE_IDX[move[0]]]
+            if not any(one_tile_behind) and two_tile_behind[PIECE_IDX[Pawn]] == -self.player_turn:
+                self.en_passant_tile = [RANK_IDX[move[1]] - self.player_turn, FILE_IDX[move[0]]]
+            else:
+                self.en_passant_tile = []
+        else:
+            self.en_passant_tile = []
+
         self.update_legal_moves()
-
-        # TODO: Add castle rights and en passant logic
     
-    def re_ambiguate_moves(self, moveset: dict) -> dict:
-        # TODO
-        ambiguated_move_set_dict = {}
+    def find_ambigous_move(self, move: str) -> str:
+        if move in self.legal_moves:
+            return move
+        
+        # Eliminate checks, promotions, and checkmates
+        short_move = move
+        for char in ["=", "+", "(", ")", "/", "#"]:
+            short_move = short_move.replace(char, "")
+        short_move = short_move.replace("0", "O")  # Fix castling
+        move_is_capture = "x" in short_move
 
-        temp_dict = {}
-        for move in moveset.keys():
-            if move[0].isupper():
-               temp_dict[move[0]] = move
-
-        return ambiguated_move_set_dict
+        # If the move is very simple (only 3 letters plus the capture)
+        # There can only be one source square so the search can ignore key[1:3]
+        if len(short_move) == 3 + move_is_capture:
+            for key in self.legal_moves.keys():
+                if short_move[0] == key[0] and short_move[1:] == key[3:]:
+                    return key
+        
+        # If the move is only one longer it has either a disambiguating rank or file
+        if len(short_move) == 4 + move_is_capture:
+            # If it has a disambiguating rank
+            if short_move[1] in RANK_IDX:
+                for key in self.legal_moves.keys():
+                    if key[2] == short_move[1] and key[3:] == short_move[2:]:
+                        return key
+            if short_move[1] in FILE_IDX:
+                for key in self.legal_moves.keys():
+                    if key[1] == short_move[1] and key[3:] == short_move[2:]:
+                        return key
+        
+        # If the move is two longer and isn't already captured above it's an error
+        raise KeyError(F"Move '{move}' not found in {self.legal_moves.keys()}")
 
 
 class ChessBoard:
@@ -222,7 +314,15 @@ class ChessBoard:
     def add_piece(self, notation: str, piece: type, player: int):
         self.board[RANK_IDX[notation[1]]][FILE_IDX[notation[0]]][PIECE_IDX[piece]] = player
 
-    def piece_on(self, board, rank, file) -> type:
+    def at_notation_raw(self, tile: str) -> list:
+        return self.board[RANK_IDX[tile[1]]][FILE_IDX[tile[0]]]
+
+    def at_notation(self, tile: str):
+        raw = self.at_notation_raw(tile)
+        piece_id = next((index for index, value in enumerate(raw) if value != 0), -1)
+        return PIECE_TYPE.get(piece_id, None), raw[piece_id]
+
+    def piece_on(self, board, rank: int, file: int) -> type:
         piece_id = next((index for index, value in enumerate(board[rank][file]) if value != 0), -1)
         return PIECE_TYPE.get(piece_id, None)
 
@@ -274,13 +374,12 @@ class ChessBoard:
         # If there's a piece in the way the player can't castle
         if any([sum(self.board[rank][col]) != 0 for col in empty_files]):
             return False
-        
+
         # Add kings to the empty files, if any are in check then the castle is illegal
         castle_check_board = ChessBoard(deepcopy(self.board))
         for file in empty_files:
             castle_check_board.board[rank][file][PIECE_IDX[King]] = player
         would_cause_check = castle_check_board.in_check(player)
-
         return not would_cause_check           
             
     def legal_moves(self, player: int, en_passant_tile: list=[], castle_rights: list=[]) -> dict:
@@ -312,7 +411,7 @@ class ChessBoard:
                         all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file - 1)
                     else:
                         new_state = deepcopy(state_without_pawn)
-                        new_state[new_rank][file - 1] = [1, 0, 0, 0, 0]
+                        new_state[new_rank][file - 1] = [player, 0, 0, 0, 0, 0]
                         all_moves[take_string] = ChessBoard(new_state)
                 
                 # Check the pawn can attack something on the right
@@ -331,40 +430,44 @@ class ChessBoard:
                         all_moves = all_moves | self.get_pawn_promotions(move_string + RANK_NAME[new_rank], state_without_pawn, rank, file)
                     else:
                         new_state = deepcopy(state_without_pawn)
-                        new_state[new_rank][file] = [1, 0, 0, 0, 0, 0]
+                        new_state[new_rank][file] = [player, 0, 0, 0, 0, 0]
                         all_moves[move_string + RANK_NAME[new_rank]] = ChessBoard(new_state)
 
                         # Check for double Moves
                         if on_home_rank and sum(self.board[new_rank - player][file]) == 0:
                             new_state = deepcopy(state_without_pawn)
-                            new_state[new_rank - player][file] = [1, 0, 0, 0, 0, 0]
+                            new_state[new_rank - player][file] = [player, 0, 0, 0, 0, 0]
                             all_moves[move_string + RANK_NAME[new_rank - player]] = ChessBoard(new_state)
 
                 # If en_passant is an option
-                if en_passant_tile and rank == en_passant_tile[0]:
-                    if file == en_passant_tile[1] + 1:
+                if en_passant_tile and new_rank == en_passant_tile[0]:
+                    # En passant right
+                    if file + 1 == en_passant_tile[1]:
                         take_string = f"{move_string}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"
                         new_state = deepcopy(state_without_pawn)
-                        new_state[new_rank][file + 1] = [1, 0, 0, 0, 0, 0]
+                        new_state[new_rank][file + 1] = [player, 0, 0, 0, 0, 0]
+                        new_state[new_rank + player][file + 1] = [0, 0, 0, 0, 0, 0]
                         all_moves[take_string] = ChessBoard(new_state)
-                    elif file == en_passant_tile[1] - 1:
+                    # En passant left
+                    elif file - 1 == en_passant_tile[1]:
                         take_string = f"{move_string}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"
                         new_state = deepcopy(state_without_pawn)
-                        new_state[new_rank][file - 1] = [1, 0, 0, 0, 0, 0]
+                        new_state[new_rank][file - 1] = [player, 0, 0, 0, 0, 0]
+                        new_state[new_rank + player][file - 1] = [0, 0, 0, 0, 0, 0]
                         all_moves[take_string] = ChessBoard(new_state)
                 continue  # Don't execute the general attack logic for pawns
             
             # Castling
             if castle_rights and piece_type == King:
                 castle_rank = 7 if player == 1 else 0
-                if "short" in castle_rights and self.check_castle_legal(player, "short"):
+                if "short" in castle_rights and self.castle_legal(player, "short"):
                     new_state = deepcopy(self.board)
                     new_state[castle_rank][4][PIECE_IDX[King]] = 0
                     new_state[castle_rank][6][PIECE_IDX[King]] = player
                     new_state[castle_rank][5][PIECE_IDX[Rook]] = player
                     new_state[castle_rank][7][PIECE_IDX[Rook]] = 0
                     all_moves["O-O"] = ChessBoard(new_state)
-                if "long" in castle_rights and self.check_castle_legal(player, "long"):
+                if "long" in castle_rights and self.castle_legal(player, "long"):
                     new_state = deepcopy(self.board)
                     new_state[castle_rank][4][PIECE_IDX[King]] = 0
                     new_state[castle_rank][2][PIECE_IDX[King]] = player
