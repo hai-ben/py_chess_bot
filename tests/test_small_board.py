@@ -1,6 +1,7 @@
 import pytest
 from src.small_board import SmallBoard
 from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
+from resources import START_STATE, BASE_STATE
 
 @pytest.fixture
 def board():
@@ -65,3 +66,22 @@ def test_set_unset_tile(board):
     board.unset_tile("a2")
     assert board.get_tile("a2")[0] is None
 
+
+def test_iter(board):
+    for idx, (file_idx, rank_idx, piece_type, _player) in enumerate(board):
+        assert piece_type is None
+        assert idx % 8 == file_idx
+        assert idx // 8 == rank_idx
+
+def test_str(board):
+    assert str(board) == BASE_STATE
+
+def test_start_state(board):
+    board.reset()
+    assert board.get_turn() == 1
+    assert board.get_white_long_castle_right()
+    assert board.get_white_short_castle_right()
+    assert board.get_black_long_castle_right()
+    assert board.get_black_short_castle_right()
+    assert board.en_passant_file() < 0
+    assert str(board) == START_STATE
