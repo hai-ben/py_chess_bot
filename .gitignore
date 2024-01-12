@@ -143,6 +143,9 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Performance Testings
+*.prof
+
 # Pyre type checker
 .pyre/
 
