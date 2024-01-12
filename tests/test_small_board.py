@@ -85,3 +85,9 @@ def test_start_state(board):
     assert board.get_black_short_castle_right()
     assert board.en_passant_file() < 0
     assert str(board) == START_STATE
+
+def test_in_check(board):
+    board.set_turn(0)
+    board.set_tile_to("a1", King, 0)
+    board.set_tile_to("a2", Rook, 1)
+    assert board.in_check()

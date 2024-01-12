@@ -153,9 +153,70 @@ class SmallBoard:
     def get_tile_by_offset(self, offset: int):
         return (PIECE_TYPE[(self.state >> offset) & 7], (self.state >> (offset + 3)) & 1)
 
+    def get_tile_by_file_rank(self, file: int, rank: int):
+        return self.get_tile_by_offset(4 * (file + 8 * rank) + BOARD_START_OFFSET)
+
     def get_tile(self, tile: str):
         return (PIECE_TYPE[self.state >> (TILE_OFFSETS[tile]) & 7],
                 ((self.state >> (TILE_OFFSETS[tile] + 3)) & 1))
     
     def zero_strip_from(self, idx_from_right: int, digits_to_left: int) -> None:
         self.state &= ~(((1 << digits_to_left) - 1) << idx_from_right)
+
+    def find_king(self, kings_player) -> str:
+        for file, rank, piece, player in self:
+            if piece is King and player == kings_player:
+                return FILE_NAME[file] + RANK_NAME[rank]
+        return ""
+    
+    def threatened_in_directions(self, file: int, rank: int,
+                                 directions: list, distance: int,
+                                 by_player: int, by_pieces: set):
+    
+        for horizontal, vertical in directions:
+            for i in range(1, distance + 1):
+                # Get the new files and ranks and end the loop if they're off the board
+                new_file = file + i * vertical
+                if new_file > 7 or new_file < 0:
+                    break
+                new_rank = rank + i * horizontal
+                if new_rank > 7 or new_rank < 0:
+                    break
+
+                piece, player = self.get_tile_by_file_rank(new_file, new_rank)
+                if piece is not None:
+                    if player == by_player and piece in by_pieces:
+                        return True
+                    break
+        return False
+
+    def tile_threatened(self, tile: str) -> bool:
+        threatening_player = int(not self.get_turn())
+        file = FILE_IDX[tile[0]]
+        rank = RANK_IDX[tile[1]]
+
+        if self.threatened_in_directions(file, rank, Bishop.ATTACK_VECTORS, 8, threatening_player, set([Queen, Bishop])):
+            return True
+        if self.threatened_in_directions(file, rank, Rook.ATTACK_VECTORS, 8, threatening_player, set([Queen, Rook])):
+            return True
+        if self.threatened_in_directions(file, rank, Knight.ATTACK_VECTORS, 1, threatening_player, set([Knight])):
+            return True
+        if self.threatened_in_directions(file, rank, Queen.ATTACK_VECTORS, 1, threatening_player, set([King])):
+            return True
+
+        # Find pawn threats
+        new_rank = rank + (-1)**threatening_player
+        if new_rank > 7 or new_rank < 0:  # Can't threaten from off the baord
+            return False
+        
+        # Check pawn left and right
+        if file - 1 > 0 and (Pawn, threatening_player) == self.get_tile_by_file_rank(new_rank, file - 1):
+            return True
+        if file + 1 < 7 and (Pawn, threatening_player) == self.get_tile_by_file_rank(new_rank, file + 1):
+            return True
+        
+        # Exhausted all possible threats
+        return False
+
+    def in_check(self) -> bool:
+        return self.tile_threatened(self.find_king(self.get_turn()))
