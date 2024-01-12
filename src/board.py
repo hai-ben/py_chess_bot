@@ -1,3 +1,4 @@
+import random
 from copy import deepcopy
 from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 
@@ -151,6 +152,10 @@ class GameState:
             self.current_state.legal_moves(self.player_turn,
                                            self.en_passant_tile,
                                            self.castle_rights())
+
+    def play_random_move(self) -> int:
+        self.make_move(random.choice(list(self.legal_moves.keys())))
+        return len(self.legal_moves)
 
     def make_move(self, move: str) -> None:
         # Update the turn and notation
@@ -408,7 +413,7 @@ class ChessBoard:
                 if file > 0 and sum(self.board[new_rank][file - 1]) == -player:
                     take_string = f"{move_string}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"
                     if promotes_on_next_rank:
-                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file - 1)
+                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file - 1, player)
                     else:
                         new_state = deepcopy(state_without_pawn)
                         new_state[new_rank][file - 1] = [player, 0, 0, 0, 0, 0]
@@ -418,7 +423,7 @@ class ChessBoard:
                 if file < 7 and sum(self.board[new_rank][file + 1]) == -player:
                     take_string = f"{move_string}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"
                     if promotes_on_next_rank:
-                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file + 1)
+                        all_moves = all_moves | self.get_pawn_promotions(take_string, state_without_pawn, rank, file + 1, player)
                     else:
                         new_state = deepcopy(state_without_pawn)
                         new_state[new_rank][file + 1] = [player, 0, 0, 0, 0, 0]
@@ -427,7 +432,7 @@ class ChessBoard:
                 # If the square in front is empty
                 if sum(self.board[new_rank][file]) == 0:
                     if promotes_on_next_rank:
-                        all_moves = all_moves | self.get_pawn_promotions(move_string + RANK_NAME[new_rank], state_without_pawn, rank, file)
+                        all_moves = all_moves | self.get_pawn_promotions(move_string + RANK_NAME[new_rank], state_without_pawn, rank, file, player)
                     else:
                         new_state = deepcopy(state_without_pawn)
                         new_state[new_rank][file] = [player, 0, 0, 0, 0, 0]
