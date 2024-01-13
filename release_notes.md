@@ -4,3 +4,8 @@
     - Fixed memory leak and got the following performance report:
         Ran 10 games with maximum 100 considering 31270 moves
         Ran in 54.3274s with peak memory usage 0.6MB of memory at peak.
+- v00.02.00:
+    - Added small_board, a highly memory effecient engine that had the performance:
+        Ran 10 with maximum 100 considering 32083 moves
+        Ran in 5.5599s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.

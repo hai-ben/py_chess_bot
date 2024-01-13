@@ -1,11 +1,12 @@
 import time
 import tracemalloc
 from src.board import GameState
+from src.small_board_adapter import SmallBoardAdapter
 
-def run_games(n_games=10, max_turns=100):
+def run_games(n_games=10, max_turns=100, adapter=GameState):
     total_moves_considered = 0
     for i in range(n_games):
-        state = GameState()
+        state = adapter()
         for j in range(max_turns):
             new_moves_count = state.play_random_move()
             total_moves_considered += new_moves_count
@@ -24,6 +25,6 @@ def perf_tracking(func, args=[], kwargs={}):
     return end_time - start_time, mem_usage
 
 
-total_time, mem = perf_tracking(run_games)
+total_time, mem = perf_tracking(run_games, kwargs={"adapter": SmallBoardAdapter})
 print(f"Ran in {total_time:9.4f}s with peak memory usage {(mem[1] / (1024 ** 2)):6.1f}MB of memory at peak.")
 print(f"The program failed to release {(mem[0] / (1024 ** 2)):6.1f}MB after execution.")
