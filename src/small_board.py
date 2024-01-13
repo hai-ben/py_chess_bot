@@ -6,6 +6,8 @@ FILE_NAME = {7: "a", 6: "b", 5: "c", 4: "d", 3: "e", 2: "f", 1: "g", 0: "h"}
 RANK_NAME = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
 PIECE_TYPE = {0: None, 1: Pawn, 2: Bishop, 3: Knight, 4: Rook, 5: Queen, 6: King}
 PIECE_ID = {None: 0, Pawn: 1, Bishop: 2, Knight: 3, Rook: 4, Queen: 5, King: 6}
+PIECE_NAME = {King: "K", Bishop: "B", Knight: "N", Queen: "Q", Rook: "R"}
+PROMOTE_TO_PIECES = [Queen, Rook, Knight, Bishop]
 TO_PLAY_OFFSET = 0
 BLACK_LONG_OFFSET = 1
 BLACK_SHORT_OFFSET = 2
@@ -41,6 +43,17 @@ ASCII_LOOKUP_BLACK = {Pawn: "♟︎", Bishop: "♝", Knight: "♞", Rook: "♜",
 LIGHT_TILE = "□"
 DARK_TILE = "■"
 
+BLACK_SHORT_SAFE_TILES = ["e8", "f8", "g8", "h8"]
+WHITE_SHORT_SAFE_TILES = ["e1", "f1", "g1", "h1"]
+BLACK_LONG_SAFE_TILES = ["e8", "d8", "c8", "b8", "a8"]
+WHITE_LONG_SAFE_TILES = ["e1", "d1", "c1", "b1", "a1"]
+THREAT_SYSTEM = [
+    (Bishop.ATTACK_VECTORS, 8, set([Queen, Bishop])),
+    (Rook.ATTACK_VECTORS, 8, set([Queen, Rook])),
+    (Knight.ATTACK_VECTORS, 1, set([Knight])),
+    (Queen.ATTACK_VECTORS, 1, set([King]))
+]
+
 
 class SmallBoard:
     def __init__(self, board_state: int=0) -> None:
@@ -56,6 +69,10 @@ class SmallBoard:
         piece_id can be looked up in the dict, controlled_by_player 1 is White, 0 is Black
         """
         self.state = board_state
+        self.unset_en_passant()
+
+        # Because the turn flips on creation, the default state should be blacks turn
+        self.flip_turn()
     
     def __iter__(self):
         self.pointer = 0
@@ -89,6 +106,7 @@ class SmallBoard:
         return out_str[1:]
 
     def reset(self):
+        self.state = 0
         self.set_turn(1)
         self.set_white_short_castle_right(1)
         self.set_black_short_castle_right(1)
@@ -105,6 +123,9 @@ class SmallBoard:
     def get_turn(self) -> int:
         return self.state & 1 == 1
     
+    def flip_turn(self) -> None:
+        self.state ^= 1
+
     def set_white_long_castle_right(self, has_right: int) -> None:
         self.state &= ~(1 << WHITE_LONG_OFFSET)
         self.state += (has_right << WHITE_LONG_OFFSET)
@@ -143,12 +164,20 @@ class SmallBoard:
     def en_passant_file(self) -> None:
         return -8 + ((self.state >> EN_PASSANT_FILE_OFFSET) & 15)
     
+    def set_tile_by_file_rank(self, file: int, rank: int, piece: type, player: int) -> None:
+        tile = FILE_NAME[file] + RANK_NAME[rank]
+        self.set_tile_to(tile, piece, player)
+
     def set_tile_to(self, tile: str, piece: type, player: int):
         self.unset_tile(tile)
         self.state += ((player << 3) + PIECE_ID[piece]) << TILE_OFFSETS[tile]
-    
-    def unset_tile(self, tile):
+
+    def unset_tile(self, tile: str) -> None:
         self.zero_strip_from(TILE_OFFSETS[tile], 4)
+
+    def unset_tiles(self, tiles: list) -> None:
+        for tile in tiles:
+            self.unset_tile(tile)
 
     def get_tile_by_offset(self, offset: int):
         return (PIECE_TYPE[(self.state >> offset) & 7], (self.state >> (offset + 3)) & 1)
@@ -190,33 +219,236 @@ class SmallBoard:
                     break
         return False
 
-    def tile_threatened(self, tile: str) -> bool:
-        threatening_player = int(not self.get_turn())
+    def tile_threatened(self, tile: str, by_player: int=None) -> bool:
+        by_player = int(not self.get_turn()) if by_player is None else by_player
         file = FILE_IDX[tile[0]]
         rank = RANK_IDX[tile[1]]
+        
+        # Find pieces from regular pieces
+        for vectors, distance, piece_set in THREAT_SYSTEM:
+            if self.threatened_in_directions(file, rank, vectors, distance, by_player, piece_set):
+                return True
 
-        if self.threatened_in_directions(file, rank, Bishop.ATTACK_VECTORS, 8, threatening_player, set([Queen, Bishop])):
-            return True
-        if self.threatened_in_directions(file, rank, Rook.ATTACK_VECTORS, 8, threatening_player, set([Queen, Rook])):
-            return True
-        if self.threatened_in_directions(file, rank, Knight.ATTACK_VECTORS, 1, threatening_player, set([Knight])):
-            return True
-        if self.threatened_in_directions(file, rank, Queen.ATTACK_VECTORS, 1, threatening_player, set([King])):
-            return True
-
-        # Find pawn threats
-        new_rank = rank + (-1)**threatening_player
-        if new_rank > 7 or new_rank < 0:  # Can't threaten from off the baord
+        # If the tile is on or behind the pawn starting row of the opposite player
+        if (rank <= 1 and by_player == 1) or (rank >= 6 and by_player == 0):
             return False
         
-        # Check pawn left and right
-        if file - 1 > 0 and (Pawn, threatening_player) == self.get_tile_by_file_rank(new_rank, file - 1):
+        # A tile is threatened by a white pawn if there is a white pawn "below" it
+        new_rank = rank + (-1 if by_player == 1 else 1)
+        # Check pawn attacks on the left and right
+        if file - 1 >= 0 and (Pawn, by_player) == self.get_tile_by_file_rank(file - 1, new_rank):
             return True
-        if file + 1 < 7 and (Pawn, threatening_player) == self.get_tile_by_file_rank(new_rank, file + 1):
+        if file + 1 <= 7 and (Pawn, by_player) == self.get_tile_by_file_rank(file + 1, new_rank):
             return True
         
         # Exhausted all possible threats
         return False
 
-    def in_check(self) -> bool:
-        return self.tile_threatened(self.find_king(self.get_turn()))
+    def in_check(self, player=None) -> bool:
+        player = self.get_turn() if player is None else player
+        king_tile = self.find_king(player)
+        if king_tile:
+            return self.tile_threatened(king_tile, int(not player))
+        else:
+            return False
+
+    def check_castle_legal(self, safe_tiles: list, player: int) -> bool:
+        if (Rook, player) != self.get_tile(safe_tiles[-1]):
+            return False
+
+        for tile in safe_tiles[:-1]:
+            if self.tile_threatened(tile):
+                return False
+        
+        for tile in safe_tiles[1:-1]:
+            piece, _player = self.get_tile(tile)
+            if piece:
+                return False
+        
+        return True
+
+    def get_castle_moves(self, active_player: int) -> dict:
+        moves = {}
+        if active_player:  # If White
+            # Short Castle
+            if self.get_white_short_castle_right() and self.check_castle_legal(WHITE_SHORT_SAFE_TILES, 1):
+                new_move = SmallBoard(self.state)
+                new_move.set_white_short_castle_right(0)
+                new_move.set_white_long_castle_right(0)
+                new_move.unset_tiles(["e1", "h1"])
+                new_move.set_tile_to("f1", Rook, 1)
+                new_move.set_tile_to("g1", King, 1)
+                moves["O-O"] = new_move
+            if self.get_white_long_castle_right() and self.check_castle_legal(WHITE_LONG_SAFE_TILES, 1):
+                new_move = SmallBoard(self.state)
+                new_move.set_white_short_castle_right(0)
+                new_move.set_white_long_castle_right(0)
+                new_move.unset_tiles(["e1", "a1"])
+                new_move.set_tile_to("d1", Rook, 1)
+                new_move.set_tile_to("c1", King, 1)
+                moves["O-O-O"] = new_move
+            return moves
+        # Otherwise it's black's turn
+        if self.get_black_short_castle_right() and self.check_castle_legal(BLACK_SHORT_SAFE_TILES, 0):
+            new_move = SmallBoard(self.state)
+            new_move.set_black_short_castle_right(0)
+            new_move.set_black_long_castle_right(0)
+            new_move.unset_tiles(["e8", "h8"])
+            new_move.set_tile_to("f8", Rook, 0)
+            new_move.set_tile_to("g8", King, 0)
+            moves["O-O"] = new_move
+        if self.get_black_long_castle_right() and self.check_castle_legal(BLACK_LONG_SAFE_TILES, 0):
+            new_move = SmallBoard(self.state)
+            new_move.set_black_short_castle_right(0)
+            new_move.set_black_long_castle_right(0)
+            new_move.unset_tiles(["e8", "a8"])
+            new_move.set_tile_to("d8", Rook, 0)
+            new_move.set_tile_to("c8", King, 0)
+            moves["O-O-O"] = new_move
+        return moves
+
+    def find_promotion_moves(self, from_file: int, from_rank: int,
+                             promotion_file: int, promotion_rank: int,
+                             is_take: bool=False) -> dict:
+        moves = {}
+        new_move_parent = SmallBoard(self.state)
+        new_move_parent.unset_tile(f"{FILE_NAME[from_file]}{RANK_NAME[from_rank]}")
+        to_tile = f"{FILE_NAME[promotion_file]}{RANK_NAME[promotion_rank]}"
+        move_string = f"{FILE_NAME[from_file]}x{to_tile}" if is_take else to_tile
+        for piece in PROMOTE_TO_PIECES:
+            new_move = SmallBoard(new_move_parent.state)
+            new_move.flip_turn()  # Because it flips on creation we need an odd number of flips
+            new_move.set_tile_to(to_tile, piece, self.get_turn())
+            moves[f"{move_string}{PIECE_NAME[piece]}"] = new_move
+        return moves
+    
+    def get_pawn_move_from_to(self, player: int, from_file: int, to_file: int,
+                              from_rank: int, to_rank: int):
+        new_move = SmallBoard(self.state)
+        new_move.unset_tile(FILE_NAME[from_file] + RANK_NAME[from_rank])
+        new_move.set_tile_by_file_rank(to_file, to_rank, Pawn, player)
+        return new_move
+
+    def find_pawn_forward_moves(self, file: int, rank: int, player: int) -> dict:
+        moves = {}
+        rank_mod = 1 if player else -1
+        new_rank = rank + rank_mod
+        if new_rank == 0 or new_rank == 7:
+            moves = moves | self.find_promotion_moves(file, rank, file, new_rank)
+        else:
+            new_move = self.get_pawn_move_from_to(player, file, file, rank, new_rank)
+            moves[f"{FILE_NAME[file]}{RANK_NAME[new_rank]}"] = new_move
+
+            if (new_rank == 2 and player == 1) or (new_rank == 5 and player == 0):
+                if self.get_tile_by_file_rank(file, new_rank + rank_mod)[0] is None:
+                    new_move = self.get_pawn_move_from_to(player, file, file, rank, new_rank + rank_mod)
+                    new_move.set_en_passant_file_idx(file)
+                    moves[f"{FILE_NAME[file]}{RANK_NAME[new_rank + rank_mod]}"] = new_move
+        return moves
+
+    def find_pawn_moves(self, file: int, rank: int, player: int) -> dict:
+        moves = {}
+        rank_mod = 1 if player else -1
+        new_rank = rank + rank_mod
+
+        # Forwards moves
+        if self.get_tile_by_file_rank(file, new_rank)[0] is None:
+            moves = moves | self.find_pawn_forward_moves(file, rank, player)
+        
+        # Attack right and left (swapped because files increase in value from right to left)
+        if file - 1 >= 0:
+            piece, tile_player = self.get_tile_by_file_rank(file - 1, new_rank)
+            if piece and tile_player != player:
+                if new_rank == 0 or new_rank == 7:
+                    moves = moves | self.find_promotion_moves(file, rank, file - 1, new_rank, True)
+                else:
+                    new_move = self.get_pawn_move_from_to(player, file, file - 1, rank, new_rank)
+                    moves[f"{FILE_NAME[file]}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
+
+        if file + 1 <= 7:
+            piece, tile_player = self.get_tile_by_file_rank(file + 1, new_rank)
+            if piece and tile_player != player:
+                if new_rank == 0 or new_rank == 7:
+                    moves = moves | self.find_promotion_moves(file, rank, file + 1, new_rank, True)
+                else:
+                    new_move = self.get_pawn_move_from_to(player, file, file + 1, rank, new_rank)
+                    moves[f"{FILE_NAME[file]}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
+
+        # En passant
+        if (new_rank == 5 and player == 1) or (new_rank == 2 and player == 0):
+            if self.en_passant_file() == file - 1:
+                new_move = self.get_pawn_move_from_to(player, file, file - 1, rank, new_rank)
+                new_move.unset_tile(FILE_NAME[file - 1] + RANK_NAME[rank])
+                moves[f"{FILE_NAME[file]}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
+            elif self.en_passant_file() == file + 1:
+                new_move = self.get_pawn_move_from_to(player, file, file + 1, rank, new_rank)
+                new_move.unset_tile(FILE_NAME[file + 1] + RANK_NAME[rank])
+                moves[f"{FILE_NAME[file]}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
+        
+        return moves
+
+    def remove_castle_right(self, player:int, move_string: str):
+        if player == 1:
+            if "K" == move_string[0]:  # Doing the castle move already removes rights
+                self.set_white_short_castle_right(0)
+                self.set_white_long_castle_right(0)
+            elif self.get_white_long_castle_right() and move_string == "Ra1":
+                self.set_white_long_castle_right(0)
+            elif self.get_white_short_castle_right() and move_string == "Rh1":
+                self.set_white_short_castle_right(0)
+        else:
+            if "K" == move_string[0]: # Doing the castle move already removes rights
+                self.set_black_short_castle_right(0)
+                self.set_black_long_castle_right(0)
+            elif self.get_black_long_castle_right() and move_string == "Ra8":
+                self.set_black_long_castle_right(0)
+            elif self.get_black_short_castle_right() and move_string == "Rh8":
+                self.set_black_short_castle_right(0)
+
+    def regular_piece_moves(self, file, rank, piece, player) -> dict:
+        moves = {}
+        for horizontal, vertical in piece.ATTACK_VECTORS:
+            for i in range(1, piece.ATTACK_RANGE + 1):
+                # Get the new files and ranks and end the loop if they're off the board
+                new_file = file + i * vertical
+                if new_file > 7 or new_file < 0:
+                    break
+                new_rank = rank + i * horizontal
+                if new_rank > 7 or new_rank < 0:
+                    break
+
+                new_piece, controlled_by = self.get_tile_by_file_rank(new_file, new_rank)
+                move_string = f"{PIECE_NAME[piece]}{FILE_NAME[file]}{RANK_NAME[rank]}"
+                new_move = SmallBoard(self.state)
+
+                # Remove Approriate Castling rights
+                if piece is Rook or piece is King:
+                    new_move.remove_castle_right(player, move_string)
+
+                # If there is a piece in the way
+                if new_piece:
+                    if controlled_by == player:
+                        break
+                    move_string += "x"
+
+                move_string += f"{FILE_NAME[new_file]}{RANK_NAME[new_rank]}"
+                new_move.set_tile_by_file_rank(file, rank, None, 0)
+                new_move.set_tile_by_file_rank(new_file, new_rank, piece, player)
+                moves[move_string] = new_move
+        return moves
+
+    def get_all_moves(self) -> dict:
+        moves = {}
+        active_player = self.get_turn()
+        moves = moves | self.get_castle_moves(active_player)
+        for file, rank, piece, player in self:
+            # Skip pieces not controlled by player
+            if piece is None or player != active_player:
+                continue
+            if piece is Pawn:
+                moves = moves | self.find_pawn_moves(file, rank, player)
+            else:
+                moves = moves | self.regular_piece_moves(file, rank, piece, player)
+
+        # Filter out moves that cause check
+        return {move: board for move, board in moves.items() if not board.in_check(active_player)}

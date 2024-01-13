@@ -32,7 +32,7 @@ OPENING_MOVES_BLACK = [
     "Nb8a6", "Nb8c6", "Ng8f6", "Ng8h6"]
 
 
-BASE_STATE = """□ ■ □ ■ □ ■ □ ■ 
+BASE_STATE_ASCII = """□ ■ □ ■ □ ■ □ ■ 
 ■ □ ■ □ ■ □ ■ □ 
 □ ■ □ ■ □ ■ □ ■ 
 ■ □ ■ □ ■ □ ■ □ 
