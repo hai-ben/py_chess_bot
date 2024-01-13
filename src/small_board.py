@@ -1,3 +1,4 @@
+from collections import defaultdict 
 from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 
 FILE_IDX = {"a": 7, "b": 6, "c": 5, "d": 4, "e": 3, "f": 2, "g": 1, "h": 0}
@@ -54,9 +55,10 @@ THREAT_SYSTEM = [
     (Queen.ATTACK_VECTORS, 1, set([King]))
 ]
 
+SUFFICIENT_MATERIAL = set([Queen, Rook, Pawn])
 
 class SmallBoard:
-    def __init__(self, board_state: int=0) -> None:
+    def __init__(self, board_state: int=0, flip_turn: bool=True) -> None:
         """
         The state a binary representation of a chess board laid out in the following hunks:
         [board_position][en_passant_info][castling_info][player_turn]
@@ -72,7 +74,8 @@ class SmallBoard:
         self.unset_en_passant()
 
         # Because the turn flips on creation, the default state should be blacks turn
-        self.flip_turn()
+        if flip_turn:
+            self.flip_turn()
     
     def __iter__(self):
         self.pointer = 0
@@ -104,6 +107,9 @@ class SmallBoard:
             if file == 7:
                 out_str = "\n" + out_str
         return out_str[1:]
+
+    def __hash__(self):
+        return hash(self.state)
 
     def reset(self):
         self.state = 0
@@ -427,16 +433,32 @@ class SmallBoard:
 
                 # If there is a piece in the way
                 if new_piece:
-                    if controlled_by == player:
-                        break
-                    move_string += "x"
+                    if controlled_by != player:
+                        move_string += "x"
+                        move_string += f"{FILE_NAME[new_file]}{RANK_NAME[new_rank]}"
+                        new_move.unset_tile(FILE_NAME[file] + RANK_NAME[rank])
+                        new_move.set_tile_by_file_rank(new_file, new_rank, piece, player)
+                        moves[move_string] = new_move
+                    break
 
                 move_string += f"{FILE_NAME[new_file]}{RANK_NAME[new_rank]}"
-                new_move.set_tile_by_file_rank(file, rank, None, 0)
+                new_move.unset_tile(FILE_NAME[file] + RANK_NAME[rank])
                 new_move.set_tile_by_file_rank(new_file, new_rank, piece, player)
                 moves[move_string] = new_move
         return moves
 
+    def sufficient_material(self) -> bool:
+        material = {1: defaultdict(int), 0: defaultdict(int)}
+        for file, rank, piece, player in self:
+            if piece in SUFFICIENT_MATERIAL:
+                return True
+            material[player][piece] += 1
+            if material[player][Bishop] == 2:
+                return True
+            if material[player][Bishop] >= 1 and material[player][Knight] >= 1:
+                return True
+        return False
+            
     def get_all_moves(self) -> dict:
         moves = {}
         active_player = self.get_turn()

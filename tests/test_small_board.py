@@ -1,8 +1,5 @@
 import pytest
 from src.small_board import SmallBoard
-board = SmallBoard()
-board.reset()
-board.get_all_moves()
 from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 from resources import START_STATE, BASE_STATE_ASCII, OPENING_MOVES_WHITE
 
@@ -100,6 +97,14 @@ def test_in_check_rook(board):
     board.set_tile_to("a1", King, 0)
     board.set_tile_to("a2", Rook, 1)
     board.set_tile_to("a3", King, 1)
+    assert board.in_check()
+    assert board.in_check(0)
+    assert not board.in_check(1)
+
+def test_rook_check_adv(board):
+    board.set_turn(0)
+    board.set_tile_to("b8", King, 0)
+    board.set_tile_to("b5", Rook, 1)
     assert board.in_check()
     assert board.in_check(0)
     assert not board.in_check(1)
@@ -326,3 +331,64 @@ def test_cant_castle_after_king_move(castle_board):
     assert black_post_move_board.get_white_short_castle_right()
     assert black_post_move_board.get_white_long_castle_right()
 
+
+def test_teleport_through_friendly(board):
+    board.set_tile_to("a1", Bishop, 1)
+    board.set_tile_to("b2", Pawn, 0)
+    board.set_turn(1)
+    expected_moves = set(["Ba1xb2"])
+    actual_moves = set(board.get_all_moves().keys())
+    assert not expected_moves.difference(actual_moves)
+    assert not actual_moves.difference(expected_moves)
+
+
+def test_teleport_through_enemy():
+    board = SmallBoard(
+        int("1000000000000000110000001001100000000000000001101010000000000000000000000001010000100"
+            + "00000100000000000100001001000000010000000010011001000000000000000011010000000000000"
+            + "00000000000000010010001101100000000000010011001000000000000000000000000110010100000"
+            + "0000101000001", 2), False)
+    assert "Qg4c8" not in board.get_all_moves()
+
+
+def test_sufficient_material_pawn(board):
+    board.set_tile_to("a1", Pawn, 1)
+    assert board.sufficient_material()
+
+
+def test_sufficient_material_two_knights(board):
+    board.set_tile_to("a1", Knight, 0)
+    board.set_tile_to("a2", Knight, 0)
+    assert not board.sufficient_material()
+
+
+def test_sufficient_material_one_knight(board):
+    board.set_tile_to("a1", Knight, 0)
+    assert not board.sufficient_material()
+
+
+def test_sufficient_material_one_bishop(board):
+    board.set_tile_to("a1", Bishop, 0)
+    assert not board.sufficient_material()
+
+
+def test_sufficient_material_two_bishop(board):
+    board.set_tile_to("a1", Bishop, 1)
+    board.set_tile_to("a2", Bishop, 1)
+    assert board.sufficient_material()
+
+
+def test_sufficient_material_knight_bishop(board):
+    board.set_tile_to("a1", Bishop, 1)
+    board.set_tile_to("a2", Knight, 1)
+    assert board.sufficient_material()
+
+
+def test_sufficient_material_queen(board):
+    board.set_tile_to("a1", Queen, 0)
+    assert board.sufficient_material()
+
+
+def test_sufficient_material_rook(board):
+    board.set_tile_to("a1", Rook, 1)
+    assert board.sufficient_material()
