@@ -316,8 +316,8 @@ class SmallBoard:
         player = self.get_turn() if player is None else player
         king_tile = self.find_king(player)
 
-        if move_string and self.move_revealed_check(king_tile, player, move_string):
-            return True
+        # if move_string and self.move_revealed_check(king_tile, player, move_string):
+        #     return True
 
         if king_tile:
             return self.tile_threatened(king_tile, int(not player))
