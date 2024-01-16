@@ -1,3 +1,4 @@
+import math
 from typing import Self
 from collections import defaultdict 
 from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
@@ -58,6 +59,16 @@ THREAT_SYSTEM = [
     (Knight.ATTACK_VECTORS, 1, set([Knight])),
     (Queen.ATTACK_VECTORS, 1, set([King]))
 ]
+DIRECTION_PIECE = {
+    (1, 1): set([Bishop, Queen]),
+    (-1, -1): set([Bishop, Queen]),
+    (1, -1): set([Bishop, Queen]),
+    (-1, 1): set([Bishop, Queen]),
+    (1, 0): set([Rook, Queen]),
+    (-1, 0): set([Rook, Queen]),
+    (0, -1): set([Rook, Queen]),
+    (0, 1): set([Rook, Queen]),
+}
 
 SUFFICIENT_MATERIAL = set([Queen, Rook, Pawn])
 
@@ -261,9 +272,53 @@ class SmallBoard:
         # Exhausted all possible threats
         return False
 
-    def in_check(self, player=None) -> bool:
+    def get_tile_vector(self, from_tile, to_tile) -> tuple[int, int]:
+        return (FILE_IDX[to_tile[0]] - FILE_IDX[from_tile[0]], RANK_IDX[to_tile[1]] - RANK_IDX[from_tile[1]])
+
+    def tile_threatened_on_vector(self, start_tile:str, vector: tuple[int, int], by_pieces: set, by_player: int) -> bool:
+        file = FILE_IDX[start_tile[0]]
+        rank = RANK_IDX[start_tile[1]]
+
+        for i in range(1, 9):
+            new_file = file + i * vector[0]
+            if new_file > 7 or new_file < 0:
+                break
+            new_rank = rank + i * vector[1]
+            if new_rank > 7 or new_rank < 0:
+                break
+            piece, player = self.get_tile_by_file_rank(new_file, new_rank)
+            if piece:
+                if player == by_player and piece in by_pieces:
+                    return True
+                break
+        return False
+
+    def move_revealed_check(self, king_tile: str, player, move_string: str) -> bool:
+        # If the move is a castle, the move did not reveal a check
+        if move_string[0] == "O" or move_string[0] == "K":
+            return False
+
+        from_tile = move_string[:2] if move_string[0].islower() else move_string[1:3]
+        check_vector = self.get_tile_vector(king_tile, from_tile)
+        
+        # If the vector isn't pure horizontal or diagonal, there's no threat revelaed threat
+        if abs(check_vector[0]) != abs(check_vector[1]) and not any([check_vector[0] == 1, check_vector[1] == 0]):
+            return False
+
+        # Clamp the vector to size 1 in each directions
+        new_vector = (max(min(check_vector[0], 1), -1), max(min(check_vector[1], 1), -1))
+
+        if self.tile_threatened_on_vector(king_tile, check_vector, DIRECTION_PIECE[new_vector], int(not player)):
+            return True
+        return False
+
+    def in_check(self, player=None, move_string: str="") -> bool:
         player = self.get_turn() if player is None else player
         king_tile = self.find_king(player)
+
+        if move_string and self.move_revealed_check(king_tile, player, move_string):
+            return True
+
         if king_tile:
             return self.tile_threatened(king_tile, int(not player))
         else:
@@ -333,9 +388,12 @@ class SmallBoard:
                              is_take: bool=False) ->  dict[str, Self]:
         moves = {}
         new_move_parent = SmallBoard(self.state)
+        to_tile = f"{FILE_NAME[promotion_file]}{RANK_NAME[promotion_rank]}"
+        from_tile = f"{FILE_NAME[from_file]}{RANK_NAME[from_rank]}"
         new_move_parent.unset_tile(f"{FILE_NAME[from_file]}{RANK_NAME[from_rank]}")
         to_tile = f"{FILE_NAME[promotion_file]}{RANK_NAME[promotion_rank]}"
-        move_string = f"{FILE_NAME[from_file]}x{to_tile}" if is_take else to_tile
+        from_tile = f"{FILE_NAME[from_file]}{RANK_NAME[from_rank]}"
+        move_string = f"{from_tile}x{to_tile}" if is_take else f"{from_tile}{to_tile}"
         for piece in PROMOTE_TO_PIECES:
             new_move = SmallBoard(new_move_parent.state)
             new_move.flip_turn()  # Because it flips on creation we need an odd number of flips
@@ -354,17 +412,18 @@ class SmallBoard:
         moves = {}
         rank_mod = 1 if player else -1
         new_rank = rank + rank_mod
+        from_tile = f"{FILE_NAME[file]}{RANK_NAME[rank]}"
         if new_rank == 0 or new_rank == 7:
             moves = moves | self.find_promotion_moves(file, rank, file, new_rank)
         else:
             new_move = self.get_pawn_move_from_to(player, file, file, rank, new_rank)
-            moves[f"{FILE_NAME[file]}{RANK_NAME[new_rank]}"] = new_move
+            moves[f"{from_tile}{FILE_NAME[file]}{RANK_NAME[new_rank]}"] = new_move
 
             if (new_rank == 2 and player == 1) or (new_rank == 5 and player == 0):
                 if self.get_tile_by_file_rank(file, new_rank + rank_mod)[0] is None:
                     new_move = self.get_pawn_move_from_to(player, file, file, rank, new_rank + rank_mod)
                     new_move.set_en_passant_file_idx(file)
-                    moves[f"{FILE_NAME[file]}{RANK_NAME[new_rank + rank_mod]}"] = new_move
+                    moves[f"{from_tile}{FILE_NAME[file]}{RANK_NAME[new_rank + rank_mod]}"] = new_move
         return moves
 
     def find_pawn_moves(self, file: int, rank: int, player: int) ->  dict[str, Self]:
@@ -377,6 +436,7 @@ class SmallBoard:
             moves = moves | self.find_pawn_forward_moves(file, rank, player)
         
         # Attack right and left (swapped because files increase in value from right to left)
+        from_tile = f"{FILE_NAME[file]}{RANK_NAME[rank]}"
         if file - 1 >= 0:
             piece, tile_player = self.get_tile_by_file_rank(file - 1, new_rank)
             if piece and tile_player != player:
@@ -384,7 +444,7 @@ class SmallBoard:
                     moves = moves | self.find_promotion_moves(file, rank, file - 1, new_rank, True)
                 else:
                     new_move = self.get_pawn_move_from_to(player, file, file - 1, rank, new_rank)
-                    moves[f"{FILE_NAME[file]}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
+                    moves[f"{from_tile}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
 
         if file + 1 <= 7:
             piece, tile_player = self.get_tile_by_file_rank(file + 1, new_rank)
@@ -393,18 +453,18 @@ class SmallBoard:
                     moves = moves | self.find_promotion_moves(file, rank, file + 1, new_rank, True)
                 else:
                     new_move = self.get_pawn_move_from_to(player, file, file + 1, rank, new_rank)
-                    moves[f"{FILE_NAME[file]}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
+                    moves[f"{from_tile}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
 
         # En passant
         if (new_rank == 5 and player == 1) or (new_rank == 2 and player == 0):
             if self.en_passant_file() == file - 1:
                 new_move = self.get_pawn_move_from_to(player, file, file - 1, rank, new_rank)
                 new_move.unset_tile(FILE_NAME[file - 1] + RANK_NAME[rank])
-                moves[f"{FILE_NAME[file]}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
+                moves[f"{from_tile}x{FILE_NAME[file - 1]}{RANK_NAME[new_rank]}"] = new_move
             elif self.en_passant_file() == file + 1:
                 new_move = self.get_pawn_move_from_to(player, file, file + 1, rank, new_rank)
                 new_move.unset_tile(FILE_NAME[file + 1] + RANK_NAME[rank])
-                moves[f"{FILE_NAME[file]}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
+                moves[f"{from_tile}x{FILE_NAME[file + 1]}{RANK_NAME[new_rank]}"] = new_move
         
         return moves
 
@@ -488,4 +548,4 @@ class SmallBoard:
                 moves = moves | self.regular_piece_moves(file, rank, piece, player)
 
         # Filter out moves that cause check
-        return {move: board for move, board in moves.items() if not board.in_check(active_player)}
+        return {move: board for move, board in moves.items() if not board.in_check(active_player, move)}

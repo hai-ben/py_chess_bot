@@ -183,7 +183,7 @@ def test_tile_threatened(board: SmallBoard):
 
 def test_promotion_basic(board: SmallBoard):
     board.set_tile_to("c7", Pawn, 1)
-    expected_moves = set(["c8Q", "c8N", "c8R", "c8B"])
+    expected_moves = set(["c7c8Q", "c7c8N", "c7c8R", "c7c8B"])
     actual_moves = set(board.get_all_moves().keys())
     print(actual_moves)
     assert not expected_moves.difference(actual_moves)
@@ -199,8 +199,8 @@ def test_promotion_take(board: SmallBoard):
     board.set_king_position(1, "a8")
     board.set_king_position(0, "a8")
     board.set_turn(0)
-    expected_moves = set(["dxc1B", "dxc1Q", "dxc1R", "dxc1N",
-                          "dxe1B", "dxe1Q", "dxe1R", "dxe1N"])
+    expected_moves = set(["d2xc1B", "d2xc1Q", "d2xc1R", "d2xc1N",
+                          "d2xe1B", "d2xe1Q", "d2xe1R", "d2xe1N"])
     actual_moves = set(board.get_all_moves().keys())
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
@@ -222,18 +222,21 @@ def test_en_passant(board: SmallBoard):
     board.set_tile_to("e7", Pawn, 0)
     board.set_turn(0)
     moves = board.get_all_moves()
-    new_board = moves["e5"]
+    print(board, "\n")
+    new_board = moves["e7e5"]
+    print(new_board, "\n")
     assert new_board.en_passant_file() == 3
 
     # Check that the move registers
-    expected_moves = set(["dxe6", "d6"])
+    expected_moves = set(["d5xe6", "d5d6"])
     ep_moves = new_board.get_all_moves()
     actual_moves = set(ep_moves.keys())
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
     
     # Check that the state after is correct
-    post_ep = ep_moves["dxe6"]
+    post_ep = ep_moves["d5xe6"]
+    print(post_ep, "\n")
     empty_tiles = ["e5", "d5", "d6", "d7", "e7", "d4"]
     for tile in empty_tiles:
         assert post_ep.get_tile(tile)[0] is None
@@ -244,7 +247,7 @@ def test_pawn_take_white(board: SmallBoard):
     board.set_tile_to("d4", Pawn, 1)
     board.set_tile_to("e5", Pawn, 0)
     board.set_turn(1)
-    expected_moves = set(["dxe5", "d5"])
+    expected_moves = set(["d4xe5", "d4d5"])
     moves = board.get_all_moves()
     actual_moves = set(moves.keys())
     assert not expected_moves.difference(actual_moves)
@@ -419,7 +422,7 @@ def test_king_set_on_start(start_board: SmallBoard):
     assert start_board.find_king(1) == "e1"
     assert start_board.find_king(0) == "e8"
 
-    board2 = start_board.get_all_moves()["e4"]
+    board2 = start_board.get_all_moves()["e2e4"]
     assert start_board.find_king(1) == "e1"
     assert start_board.find_king(0) == "e8"
     assert board2.find_king(1) == "e1"
@@ -462,4 +465,37 @@ def test_king_move_updates(castle_board: SmallBoard):
     assert black_move.find_king(0) == "f8"
     assert black_move.find_king(1) == "e1"
     
-    
+
+def test_get_tile_vector(board: SmallBoard):
+    assert board.get_tile_vector("e4", "e5") == (0, 1)
+    assert board.get_tile_vector("e5", "e4") == (0, -1)
+    assert board.get_tile_vector("c4", "f4") == (-3, 0)
+    assert board.get_tile_vector("g4", "d4") == (3, 0)
+    assert board.get_tile_vector("a1", "h8") == (-7, 7)
+    assert board.get_tile_vector("h1", "a8") == (7, 7)
+
+
+def test_tile_threatened_on_vector(board: SmallBoard):
+    board.set_tile_to("h2", Rook, 1)
+    # Correct directions
+    assert board.tile_threatened_on_vector("e2", (-1, 0), set([Rook]), 1)
+    assert board.tile_threatened_on_vector("g3", (-1, -1), set([Rook]), 1)
+
+    # Wrong direction
+    assert not board.tile_threatened_on_vector("e2", (-1, -1), set([Rook]), 1)
+
+    # Wrong pieces
+    assert not board.tile_threatened_on_vector("g3", (1, -1), set([Bishop, Queen]), 1)
+    assert not board.tile_threatened_on_vector("e2", (-1, 0), set([Bishop, Queen]), 1)
+
+    # Wrong player
+    assert not board.tile_threatened_on_vector("e2", (-1, 0), set([Rook]), 0)
+    assert not board.tile_threatened_on_vector("g3", (1, -1), set([Rook]), 0)
+
+
+def test_move_revealed_check(board: SmallBoard):
+    board.set_tile_to("a2", King, 1)
+    board.set_tile_to("c3", Pawn, 1)
+    board.set_tile_to("h2", Rook, 0)
+    assert board.move_revealed_check("a2", 1, "b2b3")
+    assert not board.move_revealed_check("a2", 1, "Ka1a2")

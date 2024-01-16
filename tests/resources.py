@@ -21,14 +21,14 @@ ITER_BASE_STATE = [
 ]
 
 OPENING_MOVES_WHITE = [
-    'a3', 'a4', 'b3', 'b4', 'c3', 'c4', 'd3', 'd4',
-    'e3', 'e4', 'f3', 'f4', 'g3', 'g4', 'h3', 'h4',
+    'a2a3', 'a2a4', 'b2b3', 'b2b4', 'c2c3', 'c2c4', 'd2d3', 'd2d4',
+    'e2e3', 'e2e4', 'f2f3', 'f2f4', 'g2g3', 'g2g4', 'h2h3', 'h2h4',
     "Nb1a3", "Nb1c3", "Ng1f3", "Ng1h3"]
 
 
 OPENING_MOVES_BLACK = [
-    'a6', 'a5', 'b6', 'b5', 'c6', 'c5', 'd6', 'd5',
-    'e6', 'e5', 'f6', 'f5', 'g6', 'g5', 'h6', 'h5',
+    'a7a6', 'a7a5', 'b7b6', 'b7b5', 'c7c6', 'c7c5', 'd7d6', 'd7d5',
+    'e7e6', 'e7e5', 'f7f6', 'f7f5', 'g7g6', 'g7g5', 'h7h6', 'h7h5',
     "Nb8a6", "Nb8c6", "Ng8f6", "Ng8h6"]
 
 

@@ -15,3 +15,8 @@
         Ran 10 with maximum 100 considering 30563 moves
         Ran in 3.4484s with peak memory usage 0.0MB of memory at peak.
         The program failed to release 0.0MB after execution.
+- v00.02.03:
+    - Attemped to preform a move_revealed_check to exit threat detection early but performance testing was worse, reverting in future releases
+        Ran 10 with maximum 100 considering 31040 moves
+        Ran in 3.6150s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.
