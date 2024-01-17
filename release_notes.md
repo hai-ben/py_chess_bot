@@ -31,3 +31,8 @@
         Ran 10 with maximum 100 considering 30652 moves
         Ran in 2.0223s with peak memory usage 0.1MB of memory at peak.
         The program failed to release 0.0MB after execution.
+- v00.02.06:
+    - Improved performance of get_tile:
+        Ran 10 with maximum 100 considering 32056 moves
+        Ran in 1.3503s with peak memory usage 0.1MB of memory at peak.
+        The program failed to release 0.0MB after execution.

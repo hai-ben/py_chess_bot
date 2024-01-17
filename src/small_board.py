@@ -78,6 +78,24 @@ SUFFICIENT_MATERIAL = set([Queen, Rook, Pawn])
 ROOK_QUEEN_BISHOP = {Bishop: BISHOP_MOVE_DICT, Rook: ROOK_MOVE_DICT, Queen: QUEEN_MOVE_DICT }
 KING_KNIGHT = {King: KING_MOVE_DICT, Knight: KNIGHT_MOVE_DICT}
 
+TILE_CONTENTS = {
+    int('1000', 2): (None, 1),
+    int('0000', 2): (None, 0),
+    int('1001', 2): (Pawn, 1),
+    int('0001', 2): (Pawn, 0),
+    int('1100', 2): (Rook, 1),
+    int('0100', 2): (Rook, 0),
+    int('1010', 2): (Bishop, 1),
+    int('0010', 2): (Bishop, 0),
+    int('1101', 2): (Queen, 1),
+    int('0101', 2): (Queen, 0),
+    int('1110', 2): (King, 1),
+    int('0110', 2): (King, 0),
+    int('1011', 2): (Knight, 1),
+    int('0011', 2): (Knight, 0)
+}
+
+
 class SmallBoard:
     def __init__(self, board_state: int=0, flip_turn: bool=True) -> None:
         """
@@ -216,20 +234,19 @@ class SmallBoard:
             self.unset_tile(tile)
 
     def get_tile_by_offset(self, offset: int) -> tuple[type, int]:
-        return (PIECE_TYPE[(self.state >> offset) & 7], (self.state >> (offset + 3)) & 1)
+        return TILE_CONTENTS[(self.state >> offset) & 0b1111]
 
     def get_tile_by_file_rank(self, file: int, rank: int) -> tuple[type, int]:
         return self.get_tile_by_offset(4 * (file + 8 * rank) + BOARD_START_OFFSET)
 
     def get_tile(self, tile: str) -> tuple[type, int]:
-        return (PIECE_TYPE[(self.state >> TILE_OFFSETS[tile]) & 7],
-                ((self.state >> (TILE_OFFSETS[tile] + 3)) & 1))
+        return TILE_CONTENTS[(self.state >> TILE_OFFSETS[tile]) & 0b1111]
     
     def zero_strip_from(self, idx_from_right: int, digits_to_left: int) -> None:
         self.state &= ~(((1 << digits_to_left) - 1) << idx_from_right)
 
     def find_king(self, player: int) -> str:
-        tile_num = (self.state >> (WHITE_KING_OFFSET if player else BLACK_KING_OFFSET)) & 63
+        tile_num = (self.state >> (WHITE_KING_OFFSET if player else BLACK_KING_OFFSET)) & 0b111111
         return FILE_NAME[tile_num % 8] + RANK_NAME[tile_num // 8]
     
     def threatened_in_directions(self, file: int, rank: int,
