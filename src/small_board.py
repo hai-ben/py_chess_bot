@@ -215,14 +215,14 @@ class SmallBoard:
         for tile in tiles:
             self.unset_tile(tile)
 
-    def get_tile_by_offset(self, offset: int):
+    def get_tile_by_offset(self, offset: int) -> tuple[type, int]:
         return (PIECE_TYPE[(self.state >> offset) & 7], (self.state >> (offset + 3)) & 1)
 
-    def get_tile_by_file_rank(self, file: int, rank: int):
+    def get_tile_by_file_rank(self, file: int, rank: int) -> tuple[type, int]:
         return self.get_tile_by_offset(4 * (file + 8 * rank) + BOARD_START_OFFSET)
 
-    def get_tile(self, tile: str):
-        return (PIECE_TYPE[self.state >> (TILE_OFFSETS[tile]) & 7],
+    def get_tile(self, tile: str) -> tuple[type, int]:
+        return (PIECE_TYPE[(self.state >> TILE_OFFSETS[tile]) & 7],
                 ((self.state >> (TILE_OFFSETS[tile] + 3)) & 1))
     
     def zero_strip_from(self, idx_from_right: int, digits_to_left: int) -> None:
@@ -435,8 +435,8 @@ class SmallBoard:
 
         for moveset in ROOK_QUEEN_BISHOP[piece][from_tile]:
             for move_to_tile in moveset:
-                piece, piece_player = self.get_tile(move_to_tile)
-                if piece:
+                piece_at_to_tile, piece_player = self.get_tile(move_to_tile)
+                if piece_at_to_tile:
                     if piece_player != for_player:
                         new_board = SmallBoard(parent_state.state, False)
                         new_board.set_tile_to(move_to_tile, piece, for_player)

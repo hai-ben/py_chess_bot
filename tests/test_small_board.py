@@ -479,3 +479,13 @@ def test_get_rook_queen_bishop_moves(board: SmallBoard):
 def test_get_king_knight_moves(board: SmallBoard):
     # TODO
     pass
+
+
+def test_disapearing_bishop():
+    board = SmallBoard(int('11101100001101000000001000000110001000000100000100010000000000000001'+\
+                           '00000000001100000000000000000000000100000000000000000001000000000000'+\
+                           '00000000000000000000000000011001000110110001000000001001000000001001'+\
+                           '10010000100110010000000010001011110000001010110111100000000000000000'+\
+                           '01111', 2), False)
+    new_board = board.get_all_moves()['Bc1b2']
+    assert (Bishop, 1) == new_board.get_tile('b2')

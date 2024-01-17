@@ -26,3 +26,8 @@
         Ran in 1.3716s with peak memory usage 0.0MB of memory at peak.
         The program failed to release 0.0MB after execution.
     - The moves considered is significantly lower, I wonder if this is a bug fix or a bug introduction
+- v00.02.05:
+    - Fixed a bug causing pieces to dissapear
+        Ran 10 with maximum 100 considering 30652 moves
+        Ran in 2.0223s with peak memory usage 0.1MB of memory at peak.
+        The program failed to release 0.0MB after execution.
