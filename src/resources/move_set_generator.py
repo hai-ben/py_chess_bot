@@ -135,11 +135,11 @@ def make_pawn_attack_dict(player: int) -> dict[str, list[str]]:
             # Attack_left
             if start_file > 0:
                 to_tile = f"{FILE_NAME[start_file - 1]}{RANK_NAME[new_rank]}"
-                moves[from_tile].extend([f"{to_tile}"])
+                moves[from_tile].extend([f"{start_file_name}x{to_tile}"])
             # Attack right
             if start_file < 7:
                 to_tile = f"{FILE_NAME[start_file + 1]}{RANK_NAME[new_rank]}"
-                moves[from_tile].extend([f"{start_file}x{to_tile}"])
+                moves[from_tile].extend([f"{start_file_name}x{to_tile}"])
     return moves
 
 

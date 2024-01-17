@@ -25,3 +25,4 @@
         Ran 10 with maximum 100 considering 19331 moves
         Ran in 1.3716s with peak memory usage 0.0MB of memory at peak.
         The program failed to release 0.0MB after execution.
+    - The moves considered is significantly lower, I wonder if this is a bug fix or a bug introduction
