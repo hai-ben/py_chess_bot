@@ -20,3 +20,8 @@
         Ran 10 with maximum 100 considering 31040 moves
         Ran in 3.6150s with peak memory usage 0.0MB of memory at peak.
         The program failed to release 0.0MB after execution.
+- v00.02.04:
+    - Dictionarized the move computation resulting in very large time savings:
+        Ran 10 with maximum 100 considering 19331 moves
+        Ran in 1.3716s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.
