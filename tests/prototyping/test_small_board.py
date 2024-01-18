@@ -467,16 +467,6 @@ def test_get_tile_vector(board: SmallBoard):
     assert board.get_tile_vector("h1", "a8") == (7, 7)
 
 
-def test_get_rook_queen_bishop_moves(board: SmallBoard):
-    # TODO
-    pass
-
-
-def test_get_king_knight_moves(board: SmallBoard):
-    # TODO
-    pass
-
-
 def test_disapearing_bishop():
     board = SmallBoard(int('11101100001101000000001000000110001000000100000100010000000000000001'+\
                            '00000000001100000000000000000000000100000000000000000001000000000000'+\
