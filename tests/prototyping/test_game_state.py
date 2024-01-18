@@ -1,14 +1,17 @@
+""""Tests for src.prototyping.board GameState"""
+# pylint: disable=missing-function-docstring
+# pylint: disable=attribute-defined-outside-init
 import pytest
-from src.board import GameState
+from src.prototyping.board import GameState
 from resources import GAME_OF_THE_CENTURY, CENTURY_END_STATE, POST_EN_PASSANT_STATE
 
 
-@pytest.fixture
-def base_state():
+@pytest.fixture(name="base_state")
+def fixture_base_state():
     return GameState()
 
-@pytest.fixture
-def ready_to_castle(base_state):
+@pytest.fixture(name="ready_to_castle")
+def fixture_ready_to_castle(base_state):
     moves = "c4 c5 Qb3 Qb6 h4 h5 a4 a5 Nf3 Nf6 Nc3 Nc6 e3 e6 d3 d6 Be2 Be7 Bd2 Bd7"
     base_state.run_game(moves)
     return base_state
@@ -21,7 +24,7 @@ def test_the_game_of_the_century(base_state):
     assert str(base_state) == CENTURY_END_STATE
     clean_game = GAME_OF_THE_CENTURY.replace("\n", " ")
     while "  " in clean_game:
-            clean_game = clean_game.replace("  ", " ")
+        clean_game = clean_game.replace("  ", " ")
     clean_game = clean_game.strip(" ")
     assert base_state.notation_string == clean_game
 

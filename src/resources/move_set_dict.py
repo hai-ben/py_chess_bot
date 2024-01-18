@@ -1,4 +1,7 @@
-from src.chess_pieces import Pawn, Rook, King, Queen, Bishop, Knight
+"""A set of move dictionaries for fast computation of possible moves"""
+# pylint: disable=too-many-lines
+# pylint: disable=line-too-long
+from src.prototyping.chess_pieces import Pawn, Rook, King, Queen, Bishop, Knight
 
 ROOK_QUEEN = set([Rook, Queen])
 BISHOP_QUEEN = set([Bishop, Queen])
@@ -540,7 +543,7 @@ WHITE_PAWN_MOVE_DICT = {
 SKIPABLE_THREAT_DICT = {
     1: {
         'b1': [
-            [('a1', ROOK_QUEEN_KING)], 
+            [('a1', ROOK_QUEEN_KING)],
             [('c1', ROOK_QUEEN_KING), ('d1', ROOK_QUEEN), ('e1', ROOK_QUEEN),('f1', ROOK_QUEEN), ('g1', ROOK_QUEEN), ('h1', ROOK_QUEEN)],
             [('b2', ROOK_QUEEN_KING), ('b3', ROOK_QUEEN), ('b4', ROOK_QUEEN), ('b5', ROOK_QUEEN), ('b6', ROOK_QUEEN), ('b7', ROOK_QUEEN), ('b8', ROOK_QUEEN)],
             [('a2', PAWN_BISHOP_QUEEN_KING)],
@@ -2055,4 +2058,3 @@ SKIPABLE_THREAT_DICT = {
             [('c7', KNIGHTS)]]
     }
 }
-

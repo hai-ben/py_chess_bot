@@ -1,4 +1,5 @@
-from board import ChessBoard
+# pylint: disable-all
+from src.prototyping.board import ChessBoard
 
 
 class Matcher:

@@ -1,16 +1,19 @@
+""""Tests for src.prototyping.board"""
+# pylint: disable=missing-function-docstring
+# pylint: disable=attribute-defined-outside-init
 import pytest
-from copy import deepcopy
-from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
-from src.board import ChessBoard
-from resources import BASE_STATE, OPENING_MOVES_WHITE, OPENING_MOVES_BLACK, ITER_BASE_STATE, START_STATE
+from src.prototyping.chess_pieces import Pawn, Rook, King
+from src.prototyping.board import ChessBoard
+from resources import BASE_STATE, OPENING_MOVES_WHITE, OPENING_MOVES_BLACK,\
+                      ITER_BASE_STATE, START_STATE
 
-@pytest.fixture
-def base_board():
+@pytest.fixture(name="base_board")
+def fixture_base_board():
     return ChessBoard()
 
 
-@pytest.fixture
-def blank_state(base_board):
+@pytest.fixture(name="blank_state")
+def fixture_blank_state(base_board):
     base_board.empty_board()
     return base_board
 
@@ -44,7 +47,7 @@ def test_opening_moves(base_board):
     legal_moves_white = base_board.legal_moves(1).keys()
     for move in OPENING_MOVES_WHITE:
         assert move in legal_moves_white
-    
+
     legal_moves_black = base_board.legal_moves(-1).keys()
     for move in OPENING_MOVES_BLACK:
         assert move in legal_moves_black
@@ -63,11 +66,12 @@ def test_pawn_attack(base_board):
 
 
 class TestRook:
+    """Used for testing rook movement"""
     EXPECTED_MOVES = set([
         'Rc4a4', 'Rc4b4', 'Rc4d4', 'Rc4e4','Rc4f4', 'Rc4g4', 'Rc4h4',
         'Rc4c1', 'Rc4c2', 'Rc4c3', 'Rc4c5', 'Rc4c6', 'Rc4c7', 'Rc4c8'
     ])
-    
+
     @pytest.fixture(autouse=True)
     def _make_rook(self, blank_state):
         self.c4_rook = blank_state
@@ -77,7 +81,7 @@ class TestRook:
         legal_moves = self.c4_rook.legal_moves(1).keys()
         for move in self.EXPECTED_MOVES:
             assert move in legal_moves
-    
+
     def test_blocked_moves_friendly(self):
         self.c4_rook.add_piece("d4", Pawn, 1)
         legal_moves = self.c4_rook.legal_moves(1).keys()
