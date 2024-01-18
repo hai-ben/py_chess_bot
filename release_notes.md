@@ -10,3 +10,29 @@
         Ran in 5.5599s with peak memory usage 0.0MB of memory at peak.
         The program failed to release 0.0MB after execution.
     - Fixed some bugs and made small performance tweaks
+- v00.02.02:
+    - Tracked king positions to improve performance:
+        Ran 10 with maximum 100 considering 30563 moves
+        Ran in 3.4484s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.
+- v00.02.03:
+    - Attemped to preform a move_revealed_check to exit threat detection early but performance testing was worse, reverting in future releases
+        Ran 10 with maximum 100 considering 31040 moves
+        Ran in 3.6150s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.
+- v00.02.04:
+    - Dictionarized the move computation resulting in very large time savings:
+        Ran 10 with maximum 100 considering 19331 moves
+        Ran in 1.3716s with peak memory usage 0.0MB of memory at peak.
+        The program failed to release 0.0MB after execution.
+    - The moves considered is significantly lower, I wonder if this is a bug fix or a bug introduction
+- v00.02.05:
+    - Fixed a bug causing pieces to dissapear
+        Ran 10 with maximum 100 considering 30652 moves
+        Ran in 2.0223s with peak memory usage 0.1MB of memory at peak.
+        The program failed to release 0.0MB after execution.
+- v00.02.06:
+    - Improved performance of get_tile:
+        Ran 10 with maximum 100 considering 32056 moves
+        Ran in 1.3503s with peak memory usage 0.1MB of memory at peak.
+        The program failed to release 0.0MB after execution.

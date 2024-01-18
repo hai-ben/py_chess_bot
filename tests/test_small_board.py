@@ -4,30 +4,37 @@ from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 from resources import START_STATE, BASE_STATE_ASCII, OPENING_MOVES_WHITE
 
 @pytest.fixture
-def board():
+def board() -> SmallBoard:
     return SmallBoard()
 
+
 @pytest.fixture
-def castle_board(board):
+def start_board(board: SmallBoard) -> SmallBoard:
     board.reset()
-    board.unset_tiles(["b1", "c1", "d1", "f1", "g1",
-                       "b8", "c8", "d8", "f8", "g8"])
     return board
 
-def test_zero_strip_from(board):
+
+@pytest.fixture
+def castle_board(start_board: SmallBoard) -> SmallBoard:
+    start_board.unset_tiles(["b1", "c1", "d1", "f1", "g1",
+                             "b8", "c8", "d8", "f8", "g8"])
+    return start_board
+
+
+def test_zero_strip_from(board: SmallBoard):
     board.state = 2**10-1  # 10 digits of  '1'
     board.zero_strip_from(3, 4)  # should be 0b1110000111
     assert board.state == int("1110000111", 2)
 
 
-def test_set_get_to_play(board):
+def test_set_get_to_play(board: SmallBoard):
     board.set_turn(1)
     assert board.get_turn() == 1
     board.set_turn(0)
     assert board.get_turn() == 0
 
 
-def test_castle_rights(board):
+def test_castle_rights(board: SmallBoard):
     board.set_white_long_castle_right(1)
     board.set_white_short_castle_right(1)
     board.set_black_long_castle_right(1)
@@ -47,14 +54,14 @@ def test_castle_rights(board):
     assert not board.get_black_short_castle_right()
     
 
-def test_en_passant_tile_get_set(board):
+def test_en_passant_tile_get_set(board: SmallBoard):
     board.set_en_passant_file_idx(2)
     assert board.en_passant_file() == 2
     board.unset_en_passant()
     assert board.en_passant_file() < 0
 
 
-def test_set_unset_tile(board):
+def test_set_unset_tile(board: SmallBoard):
     board.set_tile_to("c4", King, 1)
     board.set_tile_to("a2", Queen, 1)
     board.set_tile_to("g6", Knight, 0)
@@ -73,26 +80,28 @@ def test_set_unset_tile(board):
     assert board.get_tile("a2")[0] is None
 
 
-def test_iter(board):
+def test_iter(board: SmallBoard):
     for idx, (file_idx, rank_idx, piece_type, _player) in enumerate(board):
         assert piece_type is None
         assert idx % 8 == file_idx
         assert idx // 8 == rank_idx
 
-def test_str(board):
+
+def test_str(board: SmallBoard):
     assert str(board) == BASE_STATE_ASCII
 
-def test_start_state(board):
-    board.reset()
-    assert board.get_turn() == 1
-    assert board.get_white_long_castle_right()
-    assert board.get_white_short_castle_right()
-    assert board.get_black_long_castle_right()
-    assert board.get_black_short_castle_right()
-    assert board.en_passant_file() < 0
-    assert str(board) == START_STATE
 
-def test_in_check_rook(board):
+def test_start_state(start_board: SmallBoard):
+    assert start_board.get_turn() == 1
+    assert start_board.get_white_long_castle_right()
+    assert start_board.get_white_short_castle_right()
+    assert start_board.get_black_long_castle_right()
+    assert start_board.get_black_short_castle_right()
+    assert start_board.en_passant_file() < 0
+    assert str(start_board) == START_STATE
+
+
+def test_in_check_rook(board: SmallBoard):
     board.set_turn(0)
     board.set_tile_to("a1", King, 0)
     board.set_tile_to("a2", Rook, 1)
@@ -101,7 +110,7 @@ def test_in_check_rook(board):
     assert board.in_check(0)
     assert not board.in_check(1)
 
-def test_rook_check_adv(board):
+def test_rook_check_adv(board: SmallBoard):
     board.set_turn(0)
     board.set_tile_to("b8", King, 0)
     board.set_tile_to("b5", Rook, 1)
@@ -109,7 +118,7 @@ def test_rook_check_adv(board):
     assert board.in_check(0)
     assert not board.in_check(1)
 
-def test_in_check_king(board):
+def test_in_check_king(board: SmallBoard):
     board.set_turn(0)
     board.set_tile_to("a1", King, 0)
     board.set_tile_to("b2", King, 1)
@@ -117,16 +126,15 @@ def test_in_check_king(board):
     assert board.in_check(0)
     assert board.in_check(1)
 
-def test_in_check_queen(board):
+def test_in_check_queen(board: SmallBoard):
     board.set_turn(1)
     board.set_tile_to("a1", King, 0)
     board.set_tile_to("c3", Queen, 1)
-    print(board)
     assert not board.in_check()
     assert board.in_check(0)
     assert not board.in_check(1)
 
-def test_in_check_pawn(board):
+def test_in_check_pawn(board: SmallBoard):
     board.set_turn(1)
     board.set_tile_to("c5", King, 1)
     board.set_tile_to("d6", Pawn, 0)
@@ -135,7 +143,7 @@ def test_in_check_pawn(board):
     assert not board.in_check(0)
     assert board.in_check(1)
 
-def test_in_check_knight(board):
+def test_in_check_knight(board: SmallBoard):
     board.set_turn(1)
     board.set_tile_to("c5", King, 1)
     board.set_tile_to("d7", Knight, 0)
@@ -143,19 +151,27 @@ def test_in_check_knight(board):
     assert not board.in_check(0)
     assert board.in_check(1)
 
-def test_opening_moves(board):
-    board.reset()
+def test_opening_moves(start_board: SmallBoard):
     expected_moves = set(OPENING_MOVES_WHITE)
-    actual_moves = set(board.get_all_moves().keys())
+    actual_moves = set(start_board.get_all_moves().keys())
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
 
-def test_threatened_in_directions(board):
+
+def test_multiple_get_doesnt_change(start_board: SmallBoard):
+    expected_moves = set(OPENING_MOVES_WHITE)
+    for i in range(5):
+        actual_moves = set(start_board.get_all_moves().keys())
+    assert not expected_moves.difference(actual_moves)
+    assert not actual_moves.difference(expected_moves)
+
+
+def test_threatened_in_directions(board: SmallBoard):
     board.set_tile_to("b3", Bishop, 0)
     assert board.threatened_in_directions(5, 3, Bishop.ATTACK_VECTORS, 8, 0, set([Bishop]))
     assert not board.threatened_in_directions(5, 3, Bishop.ATTACK_VECTORS, 8, 1, set([Bishop]))
 
-def test_tile_threatened(board):
+def test_tile_threatened(board: SmallBoard):
     board.set_tile_to("c2", Pawn, 1)
     assert not board.tile_threatened("c3", 0)
     assert not board.tile_threatened("c3", 1)
@@ -164,38 +180,41 @@ def test_tile_threatened(board):
     assert not board.tile_threatened("b3", 0)
     assert not board.tile_threatened("d3", 0)
 
-def test_promotion_basic(board):
+def test_promotion_basic(board: SmallBoard):
     board.set_tile_to("c7", Pawn, 1)
     expected_moves = set(["c8Q", "c8N", "c8R", "c8B"])
+    actual_moves = set(board.get_all_moves().keys())
+    assert not expected_moves.difference(actual_moves)
+    assert not actual_moves.difference(expected_moves)
+
+def test_promotion_take(board: SmallBoard):
+    board.set_tile_to("d2", Pawn, 0)
+    board.set_tile_to("d1", Rook, 1)
+    board.set_tile_to("c1", Rook, 1)
+    board.set_tile_to("e1", Rook, 1)
+
+    # Required because the default king position is h1 meaning there's a pin
+    board.set_king_position(1, "a8")
+    board.set_king_position(0, "a8")
+    board.set_turn(0)
+    expected_moves = set(["dxc1B", "dxc1Q", "dxc1R", "dxc1N",
+                          "dxe1B", "dxe1Q", "dxe1R", "dxe1N"])
     actual_moves = set(board.get_all_moves().keys())
     print(actual_moves)
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
 
-def test_promotion_take(board):
-    board.set_tile_to("d2", Pawn, 0)
-    board.set_tile_to("d1", Rook, 1)
-    board.set_tile_to("c1", Rook, 1)
-    board.set_tile_to("e1", Rook, 1)
-    board.set_turn(0)
-    expected_moves = set(["dxc1B", "dxc1Q", "dxc1R", "dxc1N",
-                          "dxe1B", "dxe1Q", "dxe1R", "dxe1N"])
-    actual_moves = set(board.get_all_moves().keys())
-    assert not expected_moves.difference(actual_moves)
-    assert not actual_moves.difference(expected_moves)
-
-def test_pin(board):
+def test_pin(board: SmallBoard):
     board.set_tile_to("a2", King, 0)
     board.set_tile_to("b2", Pawn, 0)
     board.set_tile_to("c2", Queen, 1)
     board.set_turn(0)
     expected_moves = set(["Ka2a1", "Ka2a3"])
     actual_moves = set(board.get_all_moves().keys())
-    print(actual_moves)
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
 
-def test_en_passant(board):
+def test_en_passant(board: SmallBoard):
     # Check enpassant triggers
     board.set_tile_to("d5", Pawn, 1)
     board.set_tile_to("e7", Pawn, 0)
@@ -208,6 +227,7 @@ def test_en_passant(board):
     expected_moves = set(["dxe6", "d6"])
     ep_moves = new_board.get_all_moves()
     actual_moves = set(ep_moves.keys())
+    print(actual_moves)
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
     
@@ -218,7 +238,7 @@ def test_en_passant(board):
         assert post_ep.get_tile(tile)[0] is None
     assert post_ep.get_tile("e6") == (Pawn, 1)
 
-def test_pawn_take_white(board):
+def test_pawn_take_white(board: SmallBoard):
     # Check that the right moves exist
     board.set_tile_to("d4", Pawn, 1)
     board.set_tile_to("e5", Pawn, 0)
@@ -230,7 +250,7 @@ def test_pawn_take_white(board):
     assert not actual_moves.difference(expected_moves)
     # TODO: Test that the move works
 
-def test_castle(castle_board):
+def test_castle(castle_board: SmallBoard):
     white_moves = castle_board.get_all_moves()
     castle_board.set_turn(0)
     black_moves = castle_board.get_all_moves()
@@ -288,7 +308,7 @@ def test_castle(castle_board):
     assert black_long.get_tile("d8") == (Rook, 0)
 
 
-def test_cant_castle_after_rooks_move(castle_board):
+def test_cant_castle_after_rooks_move(castle_board: SmallBoard):
     white_right_rook = castle_board.get_all_moves()["Rh1g1"]
     white_left_rook = castle_board.get_all_moves()["Ra1b1"]
     castle_board.set_turn(0)
@@ -316,7 +336,7 @@ def test_cant_castle_after_rooks_move(castle_board):
     assert not black_left_rook.get_black_long_castle_right()
 
 
-def test_cant_castle_after_king_move(castle_board):
+def test_cant_castle_after_king_move(castle_board: SmallBoard):
     white_post_move_board = castle_board.get_all_moves()["Ke1d1"]
     castle_board.set_turn(0)
     black_post_move_board = castle_board.get_all_moves()["Ke8f8"]
@@ -332,7 +352,7 @@ def test_cant_castle_after_king_move(castle_board):
     assert black_post_move_board.get_white_long_castle_right()
 
 
-def test_teleport_through_friendly(board):
+def test_teleport_through_friendly(board: SmallBoard):
     board.set_tile_to("a1", Bishop, 1)
     board.set_tile_to("b2", Pawn, 0)
     board.set_turn(1)
@@ -351,44 +371,121 @@ def test_teleport_through_enemy():
     assert "Qg4c8" not in board.get_all_moves()
 
 
-def test_sufficient_material_pawn(board):
+def test_sufficient_material_pawn(board: SmallBoard):
     board.set_tile_to("a1", Pawn, 1)
     assert board.sufficient_material()
 
 
-def test_sufficient_material_two_knights(board):
+def test_sufficient_material_two_knights(board: SmallBoard):
     board.set_tile_to("a1", Knight, 0)
     board.set_tile_to("a2", Knight, 0)
     assert not board.sufficient_material()
 
 
-def test_sufficient_material_one_knight(board):
+def test_sufficient_material_one_knight(board: SmallBoard):
     board.set_tile_to("a1", Knight, 0)
     assert not board.sufficient_material()
 
 
-def test_sufficient_material_one_bishop(board):
+def test_sufficient_material_one_bishop(board: SmallBoard):
     board.set_tile_to("a1", Bishop, 0)
     assert not board.sufficient_material()
 
 
-def test_sufficient_material_two_bishop(board):
+def test_sufficient_material_two_bishop(board: SmallBoard):
     board.set_tile_to("a1", Bishop, 1)
     board.set_tile_to("a2", Bishop, 1)
     assert board.sufficient_material()
 
 
-def test_sufficient_material_knight_bishop(board):
+def test_sufficient_material_knight_bishop(board: SmallBoard):
     board.set_tile_to("a1", Bishop, 1)
     board.set_tile_to("a2", Knight, 1)
     assert board.sufficient_material()
 
 
-def test_sufficient_material_queen(board):
+def test_sufficient_material_queen(board: SmallBoard):
     board.set_tile_to("a1", Queen, 0)
     assert board.sufficient_material()
 
 
-def test_sufficient_material_rook(board):
+def test_sufficient_material_rook(board: SmallBoard):
     board.set_tile_to("a1", Rook, 1)
     assert board.sufficient_material()
+
+
+def test_king_set_on_start(start_board: SmallBoard):
+    assert start_board.find_king(1) == "e1"
+    assert start_board.find_king(0) == "e8"
+
+    board2 = start_board.get_all_moves()["e4"]
+    assert start_board.find_king(1) == "e1"
+    assert start_board.find_king(0) == "e8"
+    assert board2.find_king(1) == "e1"
+    assert board2.find_king(0) == "e8"
+
+
+def test_get_set_king(board: SmallBoard):
+    board.set_king_position(1, "h2")
+    assert board.find_king(1) == "h2"
+
+    board.set_king_position(0, "c4")
+    assert board.find_king(0) == "c4"
+
+
+def test_king_set_after_castle(castle_board: SmallBoard):
+    white_short_castle = castle_board.get_all_moves()["O-O"]
+    white_long_castle = castle_board.get_all_moves()["O-O-O"]
+    castle_board.flip_turn()
+    black_short_castle = castle_board.get_all_moves()["O-O"]
+    black_long_castle = castle_board.get_all_moves()["O-O-O"]
+
+    assert white_short_castle.find_king(1) == "g1"
+    assert white_short_castle.find_king(0) == "e8"
+    assert black_short_castle.find_king(0) == "g8"
+    assert black_short_castle.find_king(1) == "e1"
+
+    assert white_long_castle.find_king(1) == "c1"
+    assert white_long_castle.find_king(0) == "e8"
+    assert black_long_castle.find_king(0) == "c8"
+    assert black_long_castle.find_king(1) == "e1"
+
+
+def test_king_move_updates(castle_board: SmallBoard):
+    white_move = castle_board.get_all_moves()["Ke1f1"]
+    castle_board.flip_turn()
+    black_move = castle_board.get_all_moves()["Ke8f8"]
+
+    assert white_move.find_king(1) == "f1"
+    assert white_move.find_king(0) == "e8"
+    assert black_move.find_king(0) == "f8"
+    assert black_move.find_king(1) == "e1"
+    
+
+def test_get_tile_vector(board: SmallBoard):
+    assert board.get_tile_vector("e4", "e5") == (0, 1)
+    assert board.get_tile_vector("e5", "e4") == (0, -1)
+    assert board.get_tile_vector("c4", "f4") == (-3, 0)
+    assert board.get_tile_vector("g4", "d4") == (3, 0)
+    assert board.get_tile_vector("a1", "h8") == (-7, 7)
+    assert board.get_tile_vector("h1", "a8") == (7, 7)
+
+
+def test_get_rook_queen_bishop_moves(board: SmallBoard):
+    # TODO
+    pass
+
+
+def test_get_king_knight_moves(board: SmallBoard):
+    # TODO
+    pass
+
+
+def test_disapearing_bishop():
+    board = SmallBoard(int('11101100001101000000001000000110001000000100000100010000000000000001'+\
+                           '00000000001100000000000000000000000100000000000000000001000000000000'+\
+                           '00000000000000000000000000011001000110110001000000001001000000001001'+\
+                           '10010000100110010000000010001011110000001010110111100000000000000000'+\
+                           '01111', 2), False)
+    new_board = board.get_all_moves()['Bc1b2']
+    assert (Bishop, 1) == new_board.get_tile('b2')
