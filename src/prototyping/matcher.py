@@ -1,4 +1,4 @@
-from board import ChessBoard
+from src.prototyping.board import ChessBoard
 
 
 class Matcher:

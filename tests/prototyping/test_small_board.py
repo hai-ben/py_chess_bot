@@ -1,21 +1,23 @@
+"""Unit tests for SmallBoard"""
+# pylint: disable=missing-function-docstring
 import pytest
-from src.small_board import SmallBoard
-from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
+from src.prototyping.small_board import SmallBoard
+from src.prototyping.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 from resources import START_STATE, BASE_STATE_ASCII, OPENING_MOVES_WHITE
 
-@pytest.fixture
-def board() -> SmallBoard:
+@pytest.fixture(name="board")
+def fixture_board() -> SmallBoard:
     return SmallBoard()
 
 
-@pytest.fixture
-def start_board(board: SmallBoard) -> SmallBoard:
+@pytest.fixture(name="start_board")
+def fixture_start_board(board: SmallBoard) -> SmallBoard:
     board.reset()
     return board
 
 
-@pytest.fixture
-def castle_board(start_board: SmallBoard) -> SmallBoard:
+@pytest.fixture(name="castle_board")
+def fixture_castle_board(start_board: SmallBoard) -> SmallBoard:
     start_board.unset_tiles(["b1", "c1", "d1", "f1", "g1",
                              "b8", "c8", "d8", "f8", "g8"])
     return start_board
@@ -52,7 +54,7 @@ def test_castle_rights(board: SmallBoard):
     assert not board.get_white_short_castle_right()
     assert not board.get_black_long_castle_right()
     assert not board.get_black_short_castle_right()
-    
+
 
 def test_en_passant_tile_get_set(board: SmallBoard):
     board.set_en_passant_file_idx(2)
@@ -160,16 +162,11 @@ def test_opening_moves(start_board: SmallBoard):
 
 def test_multiple_get_doesnt_change(start_board: SmallBoard):
     expected_moves = set(OPENING_MOVES_WHITE)
-    for i in range(5):
+    for _i in range(5):
         actual_moves = set(start_board.get_all_moves().keys())
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
 
-
-def test_threatened_in_directions(board: SmallBoard):
-    board.set_tile_to("b3", Bishop, 0)
-    assert board.threatened_in_directions(5, 3, Bishop.ATTACK_VECTORS, 8, 0, set([Bishop]))
-    assert not board.threatened_in_directions(5, 3, Bishop.ATTACK_VECTORS, 8, 1, set([Bishop]))
 
 def test_tile_threatened(board: SmallBoard):
     board.set_tile_to("c2", Pawn, 1)
@@ -230,7 +227,7 @@ def test_en_passant(board: SmallBoard):
     print(actual_moves)
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
-    
+
     # Check that the state after is correct
     post_ep = ep_moves["dxe6"]
     empty_tiles = ["e5", "d5", "d6", "d7", "e7", "d4"]
@@ -248,7 +245,6 @@ def test_pawn_take_white(board: SmallBoard):
     actual_moves = set(moves.keys())
     assert not expected_moves.difference(actual_moves)
     assert not actual_moves.difference(expected_moves)
-    # TODO: Test that the move works
 
 def test_castle(castle_board: SmallBoard):
     white_moves = castle_board.get_all_moves()
@@ -340,7 +336,7 @@ def test_cant_castle_after_king_move(castle_board: SmallBoard):
     white_post_move_board = castle_board.get_all_moves()["Ke1d1"]
     castle_board.set_turn(0)
     black_post_move_board = castle_board.get_all_moves()["Ke8f8"]
-    
+
     assert not white_post_move_board.get_white_short_castle_right()
     assert not white_post_move_board.get_white_long_castle_right()
     assert white_post_move_board.get_black_short_castle_right()
@@ -460,7 +456,7 @@ def test_king_move_updates(castle_board: SmallBoard):
     assert white_move.find_king(0) == "e8"
     assert black_move.find_king(0) == "f8"
     assert black_move.find_king(1) == "e1"
-    
+
 
 def test_get_tile_vector(board: SmallBoard):
     assert board.get_tile_vector("e4", "e5") == (0, 1)

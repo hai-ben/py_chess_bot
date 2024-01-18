@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-from src.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
+from src.prototyping.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
 
 FILE_IDX = {
     "a": 0,
