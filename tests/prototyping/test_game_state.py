@@ -2,8 +2,8 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=attribute-defined-outside-init
 import pytest
+from pytest_resources import GAME_OF_THE_CENTURY, CENTURY_END_STATE, POST_EN_PASSANT_STATE
 from src.prototyping.board import GameState
-from resources import GAME_OF_THE_CENTURY, CENTURY_END_STATE, POST_EN_PASSANT_STATE
 
 
 @pytest.fixture(name="base_state")

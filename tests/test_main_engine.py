@@ -1,9 +1,8 @@
 """Unit Tests for the MainEngine class"""
 from collections import deque
 import pytest
-from prototyping.resources import BASE_STATE_ASCII, START_STATE
+from tests.prototyping.pytest_resources import BASE_STATE_ASCII, START_STATE_ASCII
 from src.main_engine import MainEngine
-
 
 STARTING_LIST_STATE =\
     [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
@@ -22,6 +21,12 @@ DOUBLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
 def fixture_blank_engine():
     """Returns a blank MainEngine class"""
     return MainEngine()
+
+
+@pytest.fixture(name="empty_board")
+def fixture_empty_board():
+    """Returns a board with no pieces and both king_idx set to a8"""
+    return MainEngine([0] * 66 + [0b1111] + [-1] + [True])
 
 
 def test_data_structs_init(engine: MainEngine):
@@ -57,7 +62,7 @@ def test_iter():
 def test_str(engine: MainEngine):
     """Makes sure the printout for the game_state is correct"""
     print(engine)
-    assert str(engine) == START_STATE
+    assert str(engine) == START_STATE_ASCII
     engine.state = [0] * 68 + [True]
     assert str(engine) == BASE_STATE_ASCII
 
@@ -78,13 +83,14 @@ def test_hash_different_init(engine: MainEngine):
     assert hash(engine3) != hash(engine)
     assert hash(engine2) == hash(engine3)
 
+
 def test_execture_short_instruction(engine: MainEngine):
     """Tests that the engine propertly executes a short instruction set"""
     start_hash = hash(engine)
     engine.execute_instructions(SHORT_INSTRUCTION)
     assert engine.state_stack[-1] == SHORT_INSTRUCTION  # Correctly stored the instruction set
     assert engine.state[SHORT_INSTRUCTION[0]] == 0  # Correctly moved piece away
-    assert engine.state[SHORT_INSTRUCTION[2]] == SHORT_INSTRUCTION[1]  # Correctly set new piece location
+    assert engine.state[SHORT_INSTRUCTION[2]] == SHORT_INSTRUCTION[1]  # Set new piece location
     assert engine.state[66] == STARTING_LIST_STATE[66]  # Castling Rights
     assert engine.state[67] == STARTING_LIST_STATE[67]  # En Passant File
     assert engine.state[68] is False   # Player turn
@@ -157,9 +163,19 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-def test_king_move():
-    # TODO:
-    pass
+# def test_king_move(empty_board: MainEngine):
+#     empty_board[SQUARE_IDX["h1"]] = SQUARE_STATES["white_king"]
+#     empty_board[]
+#     moves = set(move for move in empty_board.get_moves().keys())
+#     expected_instructions = set(
+#         (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["h2"], SQUARE_STATES["empty"],
+#          0b1111, 0b1100, -1, -1),
+#         (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["g2"], SQUARE_STATES["empty"],
+#          0b1111, 0b1100, -1, -1),
+#          (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["g1"], SQUARE_STATES["empty"],
+#          0b1111, 0b1100, -1, -1),
+#     )
+#     assert moves = set()
 
 
 def test_knight_move():

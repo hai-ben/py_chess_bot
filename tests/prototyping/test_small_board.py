@@ -1,9 +1,11 @@
 """Unit tests for SmallBoard"""
 # pylint: disable=missing-function-docstring
 import pytest
+from pytest_resources import START_STATE_ASCII, BASE_STATE_ASCII,\
+    OPENING_MOVES_WHITE
 from src.prototyping.small_board import SmallBoard
 from src.prototyping.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
-from resources import START_STATE, BASE_STATE_ASCII, OPENING_MOVES_WHITE
+
 
 @pytest.fixture(name="board")
 def fixture_board() -> SmallBoard:
@@ -100,7 +102,7 @@ def test_start_state(start_board: SmallBoard):
     assert start_board.get_black_long_castle_right()
     assert start_board.get_black_short_castle_right()
     assert start_board.en_passant_file() < 0
-    assert str(start_board) == START_STATE
+    assert str(start_board) == START_STATE_ASCII
 
 
 def test_in_check_rook(board: SmallBoard):

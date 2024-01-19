@@ -1,3 +1,6 @@
+"""A set of constants used in various unit tests"""
+# pylint: disable=line-too-long
+# pylint: disable=trailing-whitespace
 BASE_STATE = [
     [[0, 0, 0, -1, 0, 0], [0, 0, -1, 0, 0, 0], [0, -1, 0, 0, 0, 0], [0, 0, 0, 0, -1, 0], [0, 0, 0, 0, 0, -1], [0, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0]],
     [[-1, 0, 0, 0, 0, 0]] * 8,
@@ -41,7 +44,8 @@ BASE_STATE_ASCII = """□ ■ □ ■ □ ■ □ ■
 □ ■ □ ■ □ ■ □ ■ 
 ■ □ ■ □ ■ □ ■ □ """
 
-START_STATE = """♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+START_STATE_ASCII =\
+"""♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
 ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ 
 □ ■ □ ■ □ ■ □ ■ 
 ■ □ ■ □ ■ □ ■ □ 
