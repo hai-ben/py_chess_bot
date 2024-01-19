@@ -18,6 +18,7 @@ class MainEngine:
         self.state = state or STARTING_STATE.copy()
         self.game_graph = {}
         self.state_stack = deque()
+        self.hash_stack = deque()
         self.iter_counter = 0
 
         # Initialize the hash
@@ -70,7 +71,7 @@ class MainEngine:
         from_castle_state, to_castle_state, from_ep_state, to_ep_state,
         from_squar2e_idx, from_square2_state, to_square2_idx, to_square2_state)"""
         self.state_stack.append(instruction_set)
-        old_hash = hash(self)
+        self.hash_stack.append(hash(self))
 
         # Remove the piece from the start idx
         self.state[instruction_set[0]] = 0
@@ -115,4 +116,38 @@ class MainEngine:
             self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[9]]
 
         # Update the game graph
-        self.game_graph[old_hash] = (instruction_set, hash(self))
+        self.game_graph[self.hash_stack[-1]] = (instruction_set, hash(self))
+
+    def reverse_last_instruction(self):
+        """Reverses the last instruction on the stack"""
+        # Put the piece back on the start_idx
+        instruction_set = self.state_stack.pop()
+        self.state[instruction_set[0]] = instruction_set[1]
+
+        # Restore the to_idx square
+        self.state[instruction_set[2]] = instruction_set[3]
+
+        # Update Castling rights
+        if instruction_set[4] is None:  # castle rights state
+            pass
+        else:
+            self.state[66] = instruction_set[4]
+
+        # Update en_passant information
+        if instruction_set[6] is None:  # en_passant state
+            pass
+        else:
+            self.state[67] = instruction_set[6]
+
+        # Update the player's turn
+        self.state[-1] = not self.state[-1]
+
+        # Double instruction moves:
+        if len(instruction_set) > 8:
+            # Move away
+            self.state[instruction_set[8]] = instruction_set[9]
+            # Move towards
+            self.state[instruction_set[10]] = instruction_set[11]
+
+        # Update the hash
+        self.hash = self.hash_stack.pop()

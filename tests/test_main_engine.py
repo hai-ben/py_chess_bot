@@ -10,6 +10,11 @@ STARTING_LIST_STATE =\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
     + [4] + [60] + [0b1111] + [-1] + [True]
+SINGLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
+                      0b1111, 0b1010, -1, 5)
+DOUBLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
+                       0b1111, 0b0000, -1, 2,
+                       15, STARTING_LIST_STATE[15], 20, STARTING_LIST_STATE[20])
 
 
 @pytest.fixture(name="engine")
@@ -75,45 +80,51 @@ def test_hash_different_init(engine: MainEngine):
 def test_execute_instructions(engine: MainEngine):
     """Tests that the engine properly executes an instruction set"""
     start_hash = hash(engine)
-    instruction_set = (3, engine.state[3], 9, engine.state[9], 0b1111, 0b1010, -1, 5)
-    engine.execute_instructions(instruction_set)
-    assert engine.state_stack[-1] == instruction_set  # Correctly stored the instruction set
+    engine.execute_instructions(SINGLE_INSTRUCTION)
+    assert engine.state_stack[-1] == SINGLE_INSTRUCTION  # Correctly stored the instruction set
     assert engine.state[3] == 0  # Correctly moved piece away
-    assert engine.state[9] == instruction_set[1]  # Correctly set new piece location
+    assert engine.state[9] == SINGLE_INSTRUCTION[1]  # Correctly set new piece location
     assert engine.state[66] == 0b1010  # Castling Rights
     assert engine.state[67] == 5       # En Passant File
     assert engine.state[68] is False   # Player turn
     assert start_hash != hash(engine)  # The hash has udpated
-    assert engine.game_graph[start_hash] == (instruction_set, hash(engine))
+    assert engine.game_graph[start_hash] == (SINGLE_INSTRUCTION, hash(engine))
 
 
 def test_execute_double_instructions(engine: MainEngine):
     """Tests that the engine properly executes a double instruction set"""
     start_hash = hash(engine)
-    instruction_set = (3, engine.state[3], 9, engine.state[9],
-                       0b1111, 0b0000, -1, 2,
-                       15, engine.state[15], 20, engine.state[20])
-    engine.execute_instructions(instruction_set)
-    assert engine.state_stack[-1] == instruction_set  # Correctly stored the instruction set
+    engine.execute_instructions(DOUBLE_INSTRUCTION)
+    assert engine.state_stack[-1] == DOUBLE_INSTRUCTION  # Correctly stored the instruction set
     assert engine.state[3] == 0  # Correctly moved piece away
-    assert engine.state[9] == instruction_set[1]  # Correctly set new piece location
+    assert engine.state[9] == DOUBLE_INSTRUCTION[1]  # Correctly set new piece location
     assert engine.state[15] == 0  # Correctly moved piece away
-    assert engine.state[20] == instruction_set[9]  # Correctly set new piece location
+    assert engine.state[20] == DOUBLE_INSTRUCTION[9]  # Correctly set new piece location
     assert engine.state[66] == 0b0000  # Castling Rights
     assert engine.state[67] == 2       # En Passant File
     assert engine.state[68] is False   # Player turn
     assert start_hash != hash(engine)  # The hash has udpated
-    assert engine.game_graph[start_hash] == (instruction_set, hash(engine))
+    assert engine.game_graph[start_hash] == (DOUBLE_INSTRUCTION, hash(engine))
 
 
-def test_reverse_last_instruction():
-    # TODO:
-    pass
+def test_reverse_last_instruction(engine: MainEngine):
+    """Ensures that a simple instruction is correctly undone"""
+    start_hash = hash(engine)
+    engine.execute_instructions(SINGLE_INSTRUCTION)
+    engine.reverse_last_instruction()
+    assert engine.state == STARTING_LIST_STATE
+    assert hash(engine) == start_hash
+    assert len(engine.state_stack) == 0
 
 
-def test_reverse_last_double_instruction():
-    # TODO:
-    pass
+def test_reverse_last_double_instruction(engine: MainEngine):
+    """Ensures that a double instruction is correctly undone"""
+    start_hash = hash(engine)
+    engine.execute_instructions(DOUBLE_INSTRUCTION)
+    engine.reverse_last_instruction()
+    assert engine.state == STARTING_LIST_STATE
+    assert hash(engine) == start_hash
+    assert len(engine.state_stack) == 0
 
 
 def test_reverse_state_many():
