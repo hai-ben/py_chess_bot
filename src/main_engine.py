@@ -15,3 +15,14 @@ class MainEngine:
         self.state = state or STARTING_STATE
         self.game_graph = {}
         self.state_stack = deque()
+        self.iter_counter = 0
+
+    def __iter__(self):
+        self.iter_counter = 0
+        return self
+
+    def __next__(self):
+        self.iter_counter += 1
+        if self.iter_counter < 65:
+            return self.state[self.iter_counter - 1]
+        raise StopIteration

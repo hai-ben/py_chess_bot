@@ -27,20 +27,24 @@ def test_default_start_state(engine: MainEngine):
 
 
 def test_init_with_data():
+    """Makes sure one can initiate a custom state"""
     in_state = list(range(68))
     engine = MainEngine(in_state)
     assert engine.state == in_state
 
 
-def test_str():
-    # TODO:
-    pass
-
-
 def test_iter():
-    # TODO:
-    pass
+    """Makes sure the iteration goes over nothing but the squares on the board"""
+    in_state = list(range(68, 136))
+    engine = MainEngine(in_state)
+    idx = 0
+    for idx, x in enumerate(engine):
+        assert x == idx + 68
+    assert idx == 63
 
+
+def test_str():
+    pass
 
 def test_hash_basic():
     # TODO:
