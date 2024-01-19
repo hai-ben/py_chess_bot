@@ -65,11 +65,12 @@ class MainEngine:
         an instruction set has the following construction:
         (from_square_idx, from_square_state, to_square_idx, to_square_state,
         from_castle_state, to_castle_state, from_ep_state, to_ep_state)
+        The last 4 entries are left blank if there is no update
 
         If the instruction set has a castling move in it the construction is:
-        (from_square_idx, from_square_state, to_square_idx, to_square_state,
+        (from_king_idx, from_king_state, to_king_idx, to_king_state,
         from_castle_state, to_castle_state, from_ep_state, to_ep_state,
-        from_squar2e_idx, from_square2_state, to_square2_idx, to_square2_state)"""
+        from_rook_idx, from_rook_state, to_rook_idx, to_rook_state)"""
         self.state_stack.append(instruction_set)
         self.hash_stack.append(hash(self))
 
@@ -83,37 +84,37 @@ class MainEngine:
         self.hash ^= ZOBRIST_TABLE[instruction_set[2]][instruction_set[3]]
         self.hash ^= ZOBRIST_TABLE[instruction_set[2]][instruction_set[1]]
 
+        # Update the king position, this will not happen later due to the data struct definition
+        if self.state[64 + self.state[-1]] == instruction_set[0]:
+            self.state[64 + self.state[-1]] = instruction_set[2]
+
         # Update Castling rights
-        if instruction_set[4] is None:  # castle rights state
-            pass
-        else:
+        if len(instruction_set) > 4:
+            # Update castling information
             self.state[66] = instruction_set[5]
             self.hash ^= ZOBRIST_TABLE[66][instruction_set[4]]
             self.hash ^= ZOBRIST_TABLE[66][instruction_set[5]]
 
-        # Update en_passant information
-        if instruction_set[6] is None:  # en_passant state
-            pass
-        else:
+            # Update en_passant information
             self.state[67] = instruction_set[7]
             self.hash ^= ZOBRIST_TABLE[67][instruction_set[6]]
             self.hash ^= ZOBRIST_TABLE[67][instruction_set[7]]
+
+            # Double instruction (castling) moves:
+            if len(instruction_set) > 8:
+                # Move away
+                self.state[instruction_set[8]] = 0
+                self.hash ^= ZOBRIST_TABLE[instruction_set[8]][instruction_set[9]]
+                self.hash ^= ZOBRIST_TABLE[instruction_set[8]][0]
+                # Move towards
+                self.state[instruction_set[10]] = instruction_set[9]
+                self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[11]]
+                self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[9]]
 
         # Update the player's turn
         self.hash ^= ZOBRIST_TABLE[68][self.state[-1]]
         self.state[-1] = not self.state[-1]
         self.hash ^= ZOBRIST_TABLE[68][self.state[-1]]
-
-        # Double instruction moves:
-        if len(instruction_set) > 8:
-            # Move away
-            self.state[instruction_set[8]] = 0
-            self.hash ^= ZOBRIST_TABLE[instruction_set[8]][instruction_set[9]]
-            self.hash ^= ZOBRIST_TABLE[instruction_set[8]][0]
-            # Move towards
-            self.state[instruction_set[10]] = instruction_set[9]
-            self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[11]]
-            self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[9]]
 
         # Update the game graph
         self.game_graph[self.hash_stack[-1]] = (instruction_set, hash(self))

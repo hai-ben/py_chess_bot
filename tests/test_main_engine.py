@@ -10,6 +10,7 @@ STARTING_LIST_STATE =\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
     + [4] + [60] + [0b1111] + [-1] + [True]
+SHORT_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9])
 SINGLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
                       0b1111, 0b1010, -1, 5)
 DOUBLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
@@ -28,6 +29,7 @@ def test_data_structs_init(engine: MainEngine):
     assert len(engine.state) == 69
     assert isinstance(engine.game_graph, dict)
     assert isinstance(engine.state_stack, deque)
+    assert isinstance(engine.hash_stack, deque)
 
 
 def test_default_start_state(engine: MainEngine):
@@ -76,9 +78,22 @@ def test_hash_different_init(engine: MainEngine):
     assert hash(engine3) != hash(engine)
     assert hash(engine2) == hash(engine3)
 
+def test_execture_short_instruction(engine: MainEngine):
+    """Tests that the engine propertly executes a short instruction set"""
+    start_hash = hash(engine)
+    engine.execute_instructions(SHORT_INSTRUCTION)
+    assert engine.state_stack[-1] == SHORT_INSTRUCTION  # Correctly stored the instruction set
+    assert engine.state[SHORT_INSTRUCTION[0]] == 0  # Correctly moved piece away
+    assert engine.state[SHORT_INSTRUCTION[2]] == SHORT_INSTRUCTION[1]  # Correctly set new piece location
+    assert engine.state[66] == STARTING_LIST_STATE[66]  # Castling Rights
+    assert engine.state[67] == STARTING_LIST_STATE[67]  # En Passant File
+    assert engine.state[68] is False   # Player turn
+    assert start_hash != hash(engine)  # The hash has udpated
+    assert engine.game_graph[start_hash] == (SHORT_INSTRUCTION, hash(engine))
+
 
 def test_execute_instructions(engine: MainEngine):
-    """Tests that the engine properly executes an instruction set"""
+    """Tests that the engine properly executes long instruction set"""
     start_hash = hash(engine)
     engine.execute_instructions(SINGLE_INSTRUCTION)
     assert engine.state_stack[-1] == SINGLE_INSTRUCTION  # Correctly stored the instruction set
@@ -92,7 +107,7 @@ def test_execute_instructions(engine: MainEngine):
 
 
 def test_execute_double_instructions(engine: MainEngine):
-    """Tests that the engine properly executes a double instruction set"""
+    """Tests that the engine properly executes a double (castling) instruction set"""
     start_hash = hash(engine)
     engine.execute_instructions(DOUBLE_INSTRUCTION)
     assert engine.state_stack[-1] == DOUBLE_INSTRUCTION  # Correctly stored the instruction set
@@ -128,8 +143,18 @@ def test_reverse_last_double_instruction(engine: MainEngine):
 
 
 def test_king_idx_updated_with_instructions(engine: MainEngine):
-    # TODO:
-    pass
+    """Ensures that the king indicies are updated when king move instructions are executed"""
+    # White king movement
+    instruction_set_1 = (60, engine.state[60], 35, engine.state[35])
+    engine.execute_instructions(instruction_set_1)
+    assert engine.state[65] == 35  # White King
+    assert engine.state[64] == 4   # Black King
+
+    # Black king movement
+    instruction_set_2 = (4, engine.state[4], 20, engine.state[20])
+    engine.execute_instructions(instruction_set_2)
+    assert engine.state[64] == 20  # Black King
+    assert engine.state[65] == 35  # White King
 
 
 def test_king_move():
