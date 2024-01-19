@@ -15,7 +15,7 @@ A more detailed explaination of what indices represent:
     * 7-12: Black pieces, in the same order as white.
     This order is important as it's very fast to check which player controlls the piece on the tile, if these states were interwoven (1/2 representing white/black pawns). e.g.: ```7 > list[2] > 0``` is much faster than ```list[2] != and list[2] % 2 == 0```.
 
-* 64 and 65 store the index of which tile the white and black king are "in" respectively
+* 64 and 65 store the index of which tile the black and white king are "in" respectively
 
 * 66 stores an int representing one of the 16 possible castling-right combinations:
     * 0b0000: No player can castle.
@@ -33,19 +33,22 @@ A more detailed explaination of what indices represent:
 
 
 ## Board Traversals/Operations
-A set of operations that transforms board state A to board state B is tuple with the following entries in order:
-* origin_tile_index
-* origin_tile_state
-* destiniation_tile_index
-* destiniation_tile_state
-* pre_move_castle_state
-* post_move_castle_state
-* pre_move_en_passant_state
-* post_move_en_passant_state
-* (castling only) origin_tile2_index
-* (castling only) origin_tile2_state (castling only)
-* (castling only) destiniation_tile2_index
-* (castling only) destiniation_tile2_state
+A set of operations that transforms board state A to board state B is tuple of length 4, 8, or 12 with the following entries in order:
+* The following are always included:
+    * origin_tile_index (used for king in a castle command)
+    * origin_tile_state (used for king in a castle command)
+    * destiniation_tile_index
+    * destiniation_tile_state
+* The following are only included if there is a change in castle and/or enpassant state
+    * pre_move_castle_state
+    * post_move_castle_state
+    * pre_move_en_passant_state
+    * post_move_en_passant_state
+* The following are only included if the move is a castle
+    * origin_tile2_index (used for rook in a castle command)
+    * origin_tile2_state (used for rook in a castle command)
+    * destiniation_tile2_index
+    * destiniation_tile2_state
 
 It is assumed that the player to play changes during each transition.
 A paired pre/post entry value None means there is no changes.
