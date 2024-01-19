@@ -1,7 +1,9 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
 
-
+ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
+                7: "♟︎", 8: "♞", 9: "♝", 10: "♜", 11: "♛", 12: "♚"}
+LIGHT_TILE, DARK_TILE = "□", "■"
 STARTING_STATE =\
     [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
@@ -26,3 +28,18 @@ class MainEngine:
         if self.iter_counter < 65:
             return self.state[self.iter_counter - 1]
         raise StopIteration
+
+    def __str__(self) -> str:
+        out_str = ""
+        for idx, state in enumerate(self):
+            if state == 0:
+                if (idx // 8  + idx) % 2 == 0:
+                    out_str += LIGHT_TILE
+                else:
+                    out_str += DARK_TILE
+            else:
+                out_str += ASCII_LOOKUP[state]
+            out_str += " "
+            if idx > 0 and (idx + 1) % 8 == 0:
+                out_str += "\n"
+        return out_str[:-1]

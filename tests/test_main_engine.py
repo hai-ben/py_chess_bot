@@ -1,7 +1,15 @@
 """Unit Tests for the MainEngine class"""
 from collections import deque
 import pytest
+from prototyping.resources import BASE_STATE_ASCII, START_STATE
 from src.main_engine import MainEngine
+
+
+STARTING_LIST_STATE =\
+    [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
+    + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
+    + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
+    + [4] + [60] + [0b1111] + [-1]
 
 
 @pytest.fixture(name="engine")
@@ -19,11 +27,7 @@ def test_data_structs_init(engine: MainEngine):
 
 def test_default_start_state(engine: MainEngine):
     """Makes sure the default starting state is a game of chess"""
-    starting_state = [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
-        + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
-        + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4] + \
-        [4] + [60] + [0b1111] + [-1]
-    assert engine.state == starting_state
+    assert engine.state == STARTING_LIST_STATE
 
 
 def test_init_with_data():
@@ -43,8 +47,13 @@ def test_iter():
     assert idx == 63
 
 
-def test_str():
-    pass
+def test_str(engine: MainEngine):
+    """Makes sure the printout for the game_state is correct"""
+    print(engine)
+    assert str(engine) == START_STATE
+    engine.state = [0] * 68
+    assert str(engine) == BASE_STATE_ASCII
+
 
 def test_hash_basic():
     # TODO:
@@ -203,4 +212,14 @@ def test_hash_enpassant():
 
 def test_sufficient_material():
     # TODO:
+    pass
+
+
+def test_get_game_notation():
+    # TODO:
+    pass
+
+
+def test_play_game_from_notation():
+    # TODO
     pass
