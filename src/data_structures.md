@@ -52,13 +52,16 @@ A paired pre/post entry value None means there is no changes.
 This setup makes it very easy to iterate over a tuple to modify a board state as well as updating Zobrist hashes.
 
 ## Board Sate Tracking
+### Engine
 The engine has the following data structures to track board-states:
 * A Dictionary representing a graph
     * Key: ```zobrist_hash```
     * Value: ```((instruction_set_tuple), new_zobrist_hash)```
     A value of ```None``` is used when the position has no further legal moves (stalemate or checkmate conditions)
+* A stack that holds the instruction_set_tuple's necessary to reach the current game_state form the starting game state. This way instruction sets can be popped from the top of the stack and reversed to traverse up the graph of board states
+
+### Evaluator
+* A queue that holds unexplored instruction-sets for future evaluations
 * A Dictionary that holds the evaluation of each state:
     * Entry: ```zobrist_hash```
     * Value: ```board_score``` (float)
-* A stack that holds the instruction_set_tuple's necessary to reach the current game_state form the starting game state. This way instruction sets can be popped from the top of the stack and reversed to traverse up the graph of board states
-* A queue that holds unexplored instruction-sets for future evaluations
