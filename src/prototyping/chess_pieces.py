@@ -1,3 +1,4 @@
+# pylint: disable-all
 from enum import Enum
 
 class PlayerColor(Enum):

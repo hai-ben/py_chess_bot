@@ -3,6 +3,9 @@ from collections import deque
 import pytest
 from tests.prototyping.pytest_resources import BASE_STATE_ASCII, START_STATE_ASCII
 from src.main_engine import MainEngine
+from src.resources.data_translators import SQUARE_IDX, B_KING_IDX, W_KING_IDX, CASTLE_IDX, EP_IDX,\
+    TURN_IDX, SQUARE_STATES, CASTLE_STATES, EP_FILE , PLAYER_TURN
+
 
 STARTING_LIST_STATE =\
     [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
@@ -164,18 +167,14 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
 
 
 # def test_king_move(empty_board: MainEngine):
-#     empty_board[SQUARE_IDX["h1"]] = SQUARE_STATES["white_king"]
-#     empty_board[]
+#     """Tests that the engine is able to generate correct instructions for king moves"""
+#     empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
+#     empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
 #     moves = set(move for move in empty_board.get_moves().keys())
 #     expected_instructions = set(
-#         (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["h2"], SQUARE_STATES["empty"],
-#          0b1111, 0b1100, -1, -1),
-#         (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["g2"], SQUARE_STATES["empty"],
-#          0b1111, 0b1100, -1, -1),
-#          (SQUARE_IDX["h1"], SQUARE_STATES["white_king"], SQUARE_IDX["g1"], SQUARE_STATES["empty"],
-#          0b1111, 0b1100, -1, -1),
-#     )
-#     assert moves = set()
+#         (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
+#          0b1111, 0b1100, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"])
+#     assert moves == expected_instructions
 
 
 def test_knight_move():
