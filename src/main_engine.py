@@ -1,5 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
+from src.resources.move_dict import KING_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -147,3 +148,12 @@ class MainEngine:
 
         # Update the hash
         self.hash = self.hash_stack.pop()
+
+    def get_king_moves(self) -> list[tuple]:
+        """Gets all the possible king move isntructions (not castling) for the active player"""
+        king_idx = self.state[64 + self.state[-1]]
+        castle_to_state = self.state[66] and (0b1100 if self.state[-1] else 0b0011)
+        return [
+            (king_idx, self.state[king_idx], target_idx, 0, self.state[66],
+             castle_to_state, self.state[67], -1) for target_idx in KING_MOVES[king_idx]
+        ]

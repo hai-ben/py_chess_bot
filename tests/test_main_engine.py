@@ -166,15 +166,25 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-# def test_king_move(empty_board: MainEngine):
-#     """Tests that the engine is able to generate correct instructions for king moves"""
-#     empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
-#     empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
-#     moves = set(move for move in empty_board.get_moves().keys())
-#     expected_instructions = set(
-#         (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
-#          0b1111, 0b1100, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"])
-#     assert moves == expected_instructions
+def test_get_king_move_empty(empty_board: MainEngine):
+    """Tests that the king is able to move"""
+    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
+    empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
+    actual_instructions = set(empty_board.get_king_moves())
+    expected_instructions = set(
+        (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
+         0b1111, 0b1100, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"])
+    assert actual_instructions == expected_instructions  # Order doesn't matter
+
+
+def test_get_king_move_take(empty_board: MainEngine):
+    # TODO:
+    pass
+
+
+def test_get_king_moves_blocked(empty_board: MainEngine):
+    # TODO:
+    pass
 
 
 def test_knight_move():
