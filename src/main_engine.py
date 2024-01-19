@@ -151,9 +151,26 @@ class MainEngine:
 
     def get_king_moves(self) -> list[tuple]:
         """Gets all the possible king move isntructions (not castling) for the active player"""
-        king_idx = self.state[64 + self.state[-1]]
-        castle_to_state = self.state[66] and (0b1100 if self.state[-1] else 0b0011)
+        # These statements can be merged but it requires additional variable assignment
+        # If it's white's turn
+        if self.state[-1]:
+            king_idx = self.state[65]
+            castle_to_state = self.state[66] & 0b1100
+            return [
+                (king_idx, self.state[king_idx],
+                 target_idx, self.state[target_idx],
+                 self.state[66], castle_to_state, self.state[67], -1)
+                for target_idx in KING_MOVES[king_idx]
+                if self.state[target_idx] == 0 or self.state[target_idx] > 6
+            ]
+        
+        # Otherwise get the moves for black's king
+        king_idx = self.state[64]
+        castle_to_state = self.state[66] & 0b0011
         return [
-            (king_idx, self.state[king_idx], target_idx, self.state[target_idx], self.state[66],
-             castle_to_state, self.state[67], -1) for target_idx in KING_MOVES[king_idx]
+            (king_idx, self.state[king_idx],
+             target_idx, self.state[target_idx],
+             self.state[66], castle_to_state, self.state[67], -1)
+            for target_idx in KING_MOVES[king_idx]
+            if self.state[target_idx] < 7
         ]
