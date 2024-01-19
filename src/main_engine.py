@@ -1,5 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
+from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
                 7: "♟︎", 8: "♞", 9: "♝", 10: "♜", 11: "♛", 12: "♚"}
@@ -8,9 +9,9 @@ STARTING_STATE =\
     [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
-    + [4] + [60] + [0b1111] + [-1]
+    + [4] + [60] + [0b1111] + [-1] + [True]
 
-
+print(len(STARTING_STATE))
 class MainEngine:
     """See data_structures.md for detailed data structure information"""
     def __init__(self, state: list=None) -> None:
@@ -18,6 +19,7 @@ class MainEngine:
         self.game_graph = {}
         self.state_stack = deque()
         self.iter_counter = 0
+        self.hash = None
 
     def __iter__(self):
         self.iter_counter = 0
@@ -43,3 +45,12 @@ class MainEngine:
             if idx > 0 and (idx + 1) % 8 == 0:
                 out_str += "\n"
         return out_str[:-1]
+
+    def __hash__(self):
+        if self.hash is None:
+            self.hash = ZOBRIST_TABLE[68][self.state[-1]]
+            self.hash ^= ZOBRIST_TABLE[67][self.state[67]]
+            self.hash ^= ZOBRIST_TABLE[66][self.state[66]]
+            for idx, val in enumerate(self):
+                self.hash ^= ZOBRIST_TABLE[idx][val]
+        return self.hash

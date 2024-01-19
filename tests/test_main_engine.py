@@ -9,7 +9,7 @@ STARTING_LIST_STATE =\
     [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
-    + [4] + [60] + [0b1111] + [-1]
+    + [4] + [60] + [0b1111] + [-1] + [True]
 
 
 @pytest.fixture(name="engine")
@@ -20,7 +20,7 @@ def fixture_blank_engine():
 
 def test_data_structs_init(engine: MainEngine):
     """Tests to make sure the data structures match documentation"""
-    assert len(engine.state) == 68
+    assert len(engine.state) == 69
     assert isinstance(engine.game_graph, dict)
     assert isinstance(engine.state_stack, deque)
 
@@ -32,14 +32,14 @@ def test_default_start_state(engine: MainEngine):
 
 def test_init_with_data():
     """Makes sure one can initiate a custom state"""
-    in_state = list(range(68))
+    in_state = list(range(69))
     engine = MainEngine(in_state)
     assert engine.state == in_state
 
 
 def test_iter():
     """Makes sure the iteration goes over nothing but the squares on the board"""
-    in_state = list(range(68, 136))
+    in_state = list(range(68, 137))
     engine = MainEngine(in_state)
     idx = 0
     for idx, x in enumerate(engine):
@@ -51,13 +51,25 @@ def test_str(engine: MainEngine):
     """Makes sure the printout for the game_state is correct"""
     print(engine)
     assert str(engine) == START_STATE
-    engine.state = [0] * 68
+    engine.state = [0] * 69
     assert str(engine) == BASE_STATE_ASCII
 
 
-def test_hash_basic():
-    # TODO:
-    pass
+def test_hash_basic(engine: MainEngine):
+    """Checks the hash of two fresh instances are the same"""
+    engine2 = MainEngine()
+    assert hash(engine) == hash(engine2)
+
+
+def test_hash_different_init(engine: MainEngine):
+    """Checks the hash of two identical custom instances are the same
+    and different from the starting hash"""
+    new_state = [0] * 69 + [True]
+    engine2 = MainEngine(new_state)
+    engine3 = MainEngine(new_state)
+    assert hash(engine2) != hash(engine)
+    assert hash(engine3) != hash(engine)
+    assert hash(engine2) == hash(engine3)
 
 
 def test_set_get_tile():
