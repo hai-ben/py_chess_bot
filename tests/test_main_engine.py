@@ -1,25 +1,35 @@
 """Unit Tests for the MainEngine class"""
-import pytest
 from collections import deque
+import pytest
 from src.main_engine import MainEngine
 
 
-def test_data_structs_init():
+@pytest.fixture(name="engine")
+def fixture_blank_engine():
+    """Returns a blank MainEngine class"""
+    return MainEngine()
+
+
+def test_data_structs_init(engine: MainEngine):
     """Tests to make sure the data structures match documentation"""
-    engine = MainEngine()
     assert len(engine.state) == 68
-    assert engine.game_graph is dict
-    assert engine.state_stack is deque
+    assert isinstance(engine.game_graph, dict)
+    assert isinstance(engine.state_stack, deque)
 
 
-def test_default_start_state():
-    # TODO:
-    pass
+def test_default_start_state(engine: MainEngine):
+    """Makes sure the default starting state is a game of chess"""
+    starting_state = [10, 8, 9, 11, 12, 9, 8, 10] + [7] * 8\
+        + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
+        + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4] + \
+        [4] + [60] + [0b1111] + [-1]
+    assert engine.state == starting_state
 
 
 def test_init_with_data():
-    # TODO:
-    pass
+    in_state = list(range(68))
+    engine = MainEngine(in_state)
+    assert engine.state == in_state
 
 
 def test_str():

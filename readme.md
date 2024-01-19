@@ -1,4 +1,4 @@
-## Roadmap ##
+## Roadmap
 
 This is just a place for me to mess around with python, ML, and code performance evaluation right now the rough road map is:
 - Get a decent engine with stock python. No numpy, I want to really see what I can push out of stock python:
