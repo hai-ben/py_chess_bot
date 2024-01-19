@@ -4,12 +4,12 @@ This is just a place for me to mess around with python, ML, and code performance
 - Get a decent engine with stock python. No numpy, I want to really see what I can push out of stock python:
     - **DONE** Prototype to get a good hold on the problem
     - **DONE** Get some base-line performance numbers for for future performance testing
-    - Datastructure Definition
-        - What the list represents
-        - How the graph will be tracked
+    - **DONE** Datastructure Definition
+        - **DONE** What the list represents
+        - **DONE** How the graph will be tracked
     - Class Diagrams
         - The board itself
-        - The wrapper that holds graph information
+        - The wrapper that tells the engine to do stuff
     - Full suite of unit tests from small_board and board tests
     - Basic engine should be able to at least generate 100k states per second before proceeding to bot building
 
