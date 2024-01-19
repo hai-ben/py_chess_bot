@@ -128,27 +128,18 @@ class MainEngine:
         # Restore the to_idx square
         self.state[instruction_set[2]] = instruction_set[3]
 
-        # Update Castling rights
-        if instruction_set[4] is None:  # castle rights state
-            pass
-        else:
+        # Castling and en_passant updates
+        if len(instruction_set) > 4:
             self.state[66] = instruction_set[4]
-
-        # Update en_passant information
-        if instruction_set[6] is None:  # en_passant state
-            pass
-        else:
             self.state[67] = instruction_set[6]
+
+            # Double instruction moves
+            if len(instruction_set) > 8:
+                self.state[instruction_set[8]] = instruction_set[9]
+                self.state[instruction_set[10]] = instruction_set[11]
 
         # Update the player's turn
         self.state[-1] = not self.state[-1]
-
-        # Double instruction moves:
-        if len(instruction_set) > 8:
-            # Move away
-            self.state[instruction_set[8]] = instruction_set[9]
-            # Move towards
-            self.state[instruction_set[10]] = instruction_set[11]
 
         # Update the hash
         self.hash = self.hash_stack.pop()
