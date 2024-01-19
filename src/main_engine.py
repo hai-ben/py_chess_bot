@@ -11,7 +11,7 @@ STARTING_STATE =\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
     + [4] + [60] + [0b1111] + [-1] + [True]
 
-print(len(STARTING_STATE))
+
 class MainEngine:
     """See data_structures.md for detailed data structure information"""
     def __init__(self, state: list=None) -> None:
