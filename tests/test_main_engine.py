@@ -127,26 +127,72 @@ def test_reverse_last_double_instruction(engine: MainEngine):
     assert len(engine.state_stack) == 0
 
 
-def test_reverse_state_many():
-    # TODO:
-    pass
-
-def test_get_king():
+def test_king_idx_updated_with_instructions(engine: MainEngine):
     # TODO:
     pass
 
 
-def test_set_get_turn():
+def test_king_move():
     # TODO:
     pass
 
 
-def test_set_get_castle():
+def test_knight_move():
     # TODO:
     pass
 
 
-def test_set_get_en_passant():
+def test_bishop_move():
+    # TODO:
+    pass
+
+
+def test_rook_move():
+    # TODO:
+    pass
+
+
+def test_queen_move():
+    # TODO:
+    pass
+
+
+def test_pawn_single_move():
+    # TODO:
+    pass
+
+
+def test_pawn_double_move():
+    # TODO:
+    pass
+
+
+def test_pawn_promote_no_take():
+    # TODO:
+    pass
+
+
+def test_pawn_promote_take():
+    # TODO:
+    pass
+
+
+def test_enpassant_take():
+    # TODO:
+    pass
+
+
+def test_enpassant_no_take():
+    # TODO:
+    pass
+
+
+def test_short_castle():
+    # TODO:
+    pass
+
+
+def test_long_castle():
     # TODO:
     pass
 
@@ -177,71 +223,6 @@ def test_in_check_queen():
 
 
 def test_in_check_pawn():
-    # TODO:
-    pass
-
-
-def test_enpassant_take():
-    # TODO:
-    pass
-
-
-def test_enpassant_no_take():
-    # TODO:
-    pass
-
-
-def test_pawn_double_move():
-    # TODO:
-    pass
-
-
-def test_pawn_single_move():
-    # TODO:
-    pass
-
-
-def test_pawn_promote_take():
-    # TODO:
-    pass
-
-
-def test_pawn_promote_no_take():
-    # TODO:
-    pass
-
-
-def test_knight_move():
-    # TODO:
-    pass
-
-
-def test_bishop_move():
-    # TODO:
-    pass
-
-
-def test_rook_move():
-    # TODO:
-    pass
-
-
-def test_queen_move():
-    # TODO:
-    pass
-
-
-def test_king_move():
-    # TODO:
-    pass
-
-
-def test_short_castle():
-    # TODO:
-    pass
-
-
-def test_long_castle():
     # TODO:
     pass
 
