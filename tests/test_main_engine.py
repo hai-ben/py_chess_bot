@@ -32,6 +32,15 @@ def fixture_empty_board():
     return MainEngine([0] * 66 + [0b1111] + [-1] + [True])
 
 
+@pytest.fixture(name="w_king_e3")
+def fixture_w_king_e3(empty_board: MainEngine):
+    """Returns a board with no pieces except a white king_idx on e3, black's king idx is a8"""
+    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
+    empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
+    empty_board.hash = None
+    return empty_board
+
+
 def test_data_structs_init(engine: MainEngine):
     """Tests to make sure the data structures match documentation"""
     assert len(engine.state) == 69
@@ -166,20 +175,26 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-def test_get_king_move_empty(empty_board: MainEngine):
+def test_get_king_move_empty(w_king_e3: MainEngine):
     """Tests that the king is able to move"""
-    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
-    empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
-    actual_instructions = set(empty_board.get_king_moves())
+    actual_instructions = set(w_king_e3.get_king_moves())
     expected_instructions = set(
         (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
          0b1111, 0b1100, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"])
     assert actual_instructions == expected_instructions  # Order doesn't matter
 
 
-def test_get_king_move_take(empty_board: MainEngine):
-    # TODO:
-    pass
+def test_get_king_move_take(w_king_e3: MainEngine):
+    """Tests that the king is able to take other pieces"""
+    w_king_e3.state[SQUARE_IDX["e2"]] = SQUARE_STATES["b_pawn"]
+    actual_instructions = set(w_king_e3.get_king_moves())
+    expected_instructions = set(
+        (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
+         0b1111, 0b1100, -1, -1) for to_tile in ["e4", "d3", "d2", "d4", "f3", "f2", "f4"])
+    expected_instructions.add(
+        (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX["e2"], SQUARE_STATES["b_pawn"],
+         0b1111, 0b1100, -1, -1))
+    assert actual_instructions == expected_instructions  # Order doesn't matter
 
 
 def test_get_king_moves_blocked(empty_board: MainEngine):

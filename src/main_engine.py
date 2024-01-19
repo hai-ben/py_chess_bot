@@ -154,6 +154,6 @@ class MainEngine:
         king_idx = self.state[64 + self.state[-1]]
         castle_to_state = self.state[66] and (0b1100 if self.state[-1] else 0b0011)
         return [
-            (king_idx, self.state[king_idx], target_idx, 0, self.state[66],
+            (king_idx, self.state[king_idx], target_idx, self.state[target_idx], self.state[66],
              castle_to_state, self.state[67], -1) for target_idx in KING_MOVES[king_idx]
         ]
