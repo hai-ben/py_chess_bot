@@ -70,7 +70,10 @@ class MainEngine:
         If the instruction set has a castling move in it the construction is:
         (from_king_idx, from_king_state, to_king_idx, to_king_state,
         from_castle_state, to_castle_state, from_ep_state, to_ep_state,
-        from_rook_idx, from_rook_state, to_rook_idx, to_rook_state)"""
+        from_rook_idx, from_rook_state, to_rook_idx, to_rook_state)
+
+        The hashing functionality is left in this function because it avoids
+        extra checks on the length of the instructions."""
         self.state_stack.append(instruction_set)
         self.hash_stack.append(hash(self))
 
@@ -106,6 +109,7 @@ class MainEngine:
                 self.state[instruction_set[8]] = 0
                 self.hash ^= ZOBRIST_TABLE[instruction_set[8]][instruction_set[9]]
                 self.hash ^= ZOBRIST_TABLE[instruction_set[8]][0]
+
                 # Move towards
                 self.state[instruction_set[10]] = instruction_set[9]
                 self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[11]]
