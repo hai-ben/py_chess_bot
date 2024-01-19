@@ -38,14 +38,14 @@ A set of operations that transforms board state A to board state B is tuple with
 * origin_tile_state
 * destiniation_tile_index
 * destiniation_tile_state
-    * (castling only) origin_tile2_index
-    * (castling only) origin_tile2_state (castling only)
-    * (castling only) destiniation_tile2_index
-    * (castling only) destiniation_tile2_state
 * pre_move_castle_state
 * post_move_castle_state
 * pre_move_en_passant_state
 * post_move_en_passant_state
+* (castling only) origin_tile2_index
+* (castling only) origin_tile2_state (castling only)
+* (castling only) destiniation_tile2_index
+* (castling only) destiniation_tile2_state
 
 It is assumed that the player to play changes during each transition.
 A paired pre/post entry value None means there is no changes.

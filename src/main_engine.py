@@ -15,11 +15,14 @@ STARTING_STATE =\
 class MainEngine:
     """See data_structures.md for detailed data structure information"""
     def __init__(self, state: list=None) -> None:
-        self.state = state or STARTING_STATE
+        self.state = state or STARTING_STATE.copy()
         self.game_graph = {}
         self.state_stack = deque()
         self.iter_counter = 0
+
+        # Initialize the hash
         self.hash = None
+        self.hash = hash(self)
 
     def __iter__(self):
         self.iter_counter = 0
@@ -54,3 +57,62 @@ class MainEngine:
             for idx, val in enumerate(self):
                 self.hash ^= ZOBRIST_TABLE[idx][val]
         return self.hash
+
+    def execute_instructions(self, instruction_set: tuple):
+        """Executes the instruction_set tuple, altering the hash and list,
+        appending the instructions to the state_stack and updating the graph
+        an instruction set has the following construction:
+        (from_square_idx, from_square_state, to_square_idx, to_square_state,
+        from_castle_state, to_castle_state, from_ep_state, to_ep_state)
+
+        If the instruction set has a castling move in it the construction is:
+        (from_square_idx, from_square_state, to_square_idx, to_square_state,
+        from_castle_state, to_castle_state, from_ep_state, to_ep_state,
+        from_squar2e_idx, from_square2_state, to_square2_idx, to_square2_state)"""
+        self.state_stack.append(instruction_set)
+        old_hash = hash(self)
+
+        # Remove the piece from the start idx
+        self.state[instruction_set[0]] = 0
+        self.hash ^= ZOBRIST_TABLE[instruction_set[0]][instruction_set[1]]
+        self.hash ^= ZOBRIST_TABLE[instruction_set[0]][0]
+
+        # Place the piece on the the target idx
+        self.state[instruction_set[2]] = instruction_set[1]  # Put it on the second tile
+        self.hash ^= ZOBRIST_TABLE[instruction_set[2]][instruction_set[3]]
+        self.hash ^= ZOBRIST_TABLE[instruction_set[2]][instruction_set[1]]
+
+        # Update Castling rights
+        if instruction_set[4] is None:  # castle rights state
+            pass
+        else:
+            self.state[66] = instruction_set[5]
+            self.hash ^= ZOBRIST_TABLE[66][instruction_set[4]]
+            self.hash ^= ZOBRIST_TABLE[66][instruction_set[5]]
+
+        # Update en_passant information
+        if instruction_set[6] is None:  # en_passant state
+            pass
+        else:
+            self.state[67] = instruction_set[7]
+            self.hash ^= ZOBRIST_TABLE[67][instruction_set[6]]
+            self.hash ^= ZOBRIST_TABLE[67][instruction_set[7]]
+
+        # Update the player's turn
+        self.hash ^= ZOBRIST_TABLE[68][self.state[-1]]
+        self.state[-1] = not self.state[-1]
+        self.hash ^= ZOBRIST_TABLE[68][self.state[-1]]
+
+        # Double instruction moves:
+        if len(instruction_set) > 8:
+            # Move away
+            self.state[instruction_set[8]] = 0
+            self.hash ^= ZOBRIST_TABLE[instruction_set[8]][instruction_set[9]]
+            self.hash ^= ZOBRIST_TABLE[instruction_set[8]][0]
+            # Move towards
+            self.state[instruction_set[10]] = instruction_set[9]
+            self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[11]]
+            self.hash ^= ZOBRIST_TABLE[instruction_set[10]][instruction_set[9]]
+
+        # Update the game graph
+        self.game_graph[old_hash] = (instruction_set, hash(self))

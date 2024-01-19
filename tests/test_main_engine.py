@@ -32,18 +32,18 @@ def test_default_start_state(engine: MainEngine):
 
 def test_init_with_data():
     """Makes sure one can initiate a custom state"""
-    in_state = list(range(69))
+    in_state = list([0] * 68 + [True])
     engine = MainEngine(in_state)
     assert engine.state == in_state
 
 
 def test_iter():
     """Makes sure the iteration goes over nothing but the squares on the board"""
-    in_state = list(range(68, 137))
+    in_state = list([2] * 68 + [True])
     engine = MainEngine(in_state)
     idx = 0
     for idx, x in enumerate(engine):
-        assert x == idx + 68
+        assert x == 2
     assert idx == 63
 
 
@@ -51,7 +51,7 @@ def test_str(engine: MainEngine):
     """Makes sure the printout for the game_state is correct"""
     print(engine)
     assert str(engine) == START_STATE
-    engine.state = [0] * 69
+    engine.state = [0] * 68 + [True]
     assert str(engine) == BASE_STATE_ASCII
 
 
@@ -64,7 +64,7 @@ def test_hash_basic(engine: MainEngine):
 def test_hash_different_init(engine: MainEngine):
     """Checks the hash of two identical custom instances are the same
     and different from the starting hash"""
-    new_state = [0] * 69 + [True]
+    new_state = [0] * 68 + [True]
     engine2 = MainEngine(new_state)
     engine3 = MainEngine(new_state)
     assert hash(engine2) != hash(engine)
@@ -72,10 +72,53 @@ def test_hash_different_init(engine: MainEngine):
     assert hash(engine2) == hash(engine3)
 
 
-def test_set_get_tile():
+def test_execute_instructions(engine: MainEngine):
+    """Tests that the engine properly executes an instruction set"""
+    start_hash = hash(engine)
+    instruction_set = (3, engine.state[3], 9, engine.state[9], 0b1111, 0b1010, -1, 5)
+    engine.execute_instructions(instruction_set)
+    assert engine.state_stack[-1] == instruction_set  # Correctly stored the instruction set
+    assert engine.state[3] == 0  # Correctly moved piece away
+    assert engine.state[9] == instruction_set[1]  # Correctly set new piece location
+    assert engine.state[66] == 0b1010  # Castling Rights
+    assert engine.state[67] == 5       # En Passant File
+    assert engine.state[68] is False   # Player turn
+    assert start_hash != hash(engine)  # The hash has udpated
+    assert engine.game_graph[start_hash] == (instruction_set, hash(engine))
+
+
+def test_execute_double_instructions(engine: MainEngine):
+    """Tests that the engine properly executes a double instruction set"""
+    start_hash = hash(engine)
+    instruction_set = (3, engine.state[3], 9, engine.state[9],
+                       0b1111, 0b0000, -1, 2,
+                       15, engine.state[15], 20, engine.state[20])
+    engine.execute_instructions(instruction_set)
+    assert engine.state_stack[-1] == instruction_set  # Correctly stored the instruction set
+    assert engine.state[3] == 0  # Correctly moved piece away
+    assert engine.state[9] == instruction_set[1]  # Correctly set new piece location
+    assert engine.state[15] == 0  # Correctly moved piece away
+    assert engine.state[20] == instruction_set[9]  # Correctly set new piece location
+    assert engine.state[66] == 0b0000  # Castling Rights
+    assert engine.state[67] == 2       # En Passant File
+    assert engine.state[68] is False   # Player turn
+    assert start_hash != hash(engine)  # The hash has udpated
+    assert engine.game_graph[start_hash] == (instruction_set, hash(engine))
+
+
+def test_reverse_last_instruction():
     # TODO:
     pass
 
+
+def test_reverse_last_double_instruction():
+    # TODO:
+    pass
+
+
+def test_reverse_state_many():
+    # TODO:
+    pass
 
 def test_get_king():
     # TODO:
