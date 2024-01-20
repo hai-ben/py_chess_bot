@@ -34,3 +34,16 @@ def move_dict_for_directions(vectors: list[tuple[int]]) -> dict[int: list[list[i
             if new_moves:
                 moves[start_file * 8 + start_rank].append(new_moves)
     return moves
+
+
+def pawn_single_move_generator() -> dict[bool, dict[int, tuple]]:
+    """Generates the instruction set to move a pawn forward"""
+    moves = {}
+    # Add regular forward moves
+    moves[True] = {idx: (idx, 1, idx - 8, 0) for idx in range(55, 15, -1)}
+    moves[False] = {idx: (idx, 7, idx + 8, 0) for idx in range(8, 48)}
+
+    # TODO: Add promotion moves
+    # moves[True] = moves[True] | {}
+    # moves[False] = moves[False] | {}
+    return moves

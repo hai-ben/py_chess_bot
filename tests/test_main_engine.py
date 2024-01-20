@@ -528,7 +528,15 @@ MOVE_TEST_DICT = {
          ["h4"],
          ["empty"]],
         ("get_pawn_moves", [SQUARE_IDX["h3"]])
-    )
+    ),
+    "BLACK_PAWN_SINGLE_MOVE_SIMPLE": (
+        [("a7", "b_pawn"), (TURN_IDX, False)],
+        [["a7"],
+         ["b_pawn"],
+         ["a6"],
+         ["empty"]],
+        ("get_pawn_moves", [SQUARE_IDX["a7"]])
+    ),
 }
 
 
@@ -587,12 +595,12 @@ def test_get_moves(empty_board: MainEngine, test_key):
     assert actual_instructions == expected_instructions
 
 
-def test_pawn_single_move():
+def test_pawn_double_move():
     # TODO:
     pass
 
 
-def test_pawn_double_move():
+def test_pawn_take():
     # TODO:
     pass
 

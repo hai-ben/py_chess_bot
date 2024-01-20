@@ -1,6 +1,7 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
-from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES, QUEEN_MOVES
+from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
+    QUEEN_MOVES, PAWN_SINGLE_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -284,3 +285,14 @@ class MainEngine:
             additional_state_info = ()
 
         return self.get_blockable_moves(queen_idx, QUEEN_MOVES, additional_state_info)
+
+    def get_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the possible pawn moves for the pawn on pawn_idx"""
+        moves = []
+        if self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+        else:
+            additional_state_info = ()
+
+        moves.append(PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx] + additional_state_info)
+        return moves
