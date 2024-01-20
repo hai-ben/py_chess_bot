@@ -338,15 +338,25 @@ class MainEngine:
                 moves.append(PAWN_DOUBLE_MOVES_WHITE[pawn_idx]\
                             + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
 
-        # Attack left
-        if pawn_idx % 8 > 0 and self.state[pawn_idx - 9] > 6:
-            moves.append((pawn_idx, 1, pawn_idx - 9, self.state[pawn_idx - 9])\
-                            + additional_state_info)
+        # If the pawn can atack left
+        if pawn_idx % 8 > 0:
+            # If there's a piece to attack
+            if self.state[pawn_idx - 9] > 6:
+                moves.append((pawn_idx, 1, pawn_idx - 9, self.state[pawn_idx - 9])\
+                                + additional_state_info)
+            # If the pawn can is on the right rank and file to take via en passant
+            elif pawn_idx // 8 == 3 and (pawn_idx - 1) % 8 == self.state[67]:
+                moves.append((pawn_idx, 1, pawn_idx - 9, 0) + additional_state_info\
+                             + (pawn_idx - 1, 0, pawn_idx - 1, 7))
 
         # Attack right
-        if pawn_idx % 8 < 7 and self.state[pawn_idx - 7] > 6:
-            moves.append((pawn_idx, 1, pawn_idx - 7, self.state[pawn_idx - 7])\
-                            + additional_state_info)
+        if pawn_idx % 8 < 7:
+            if self.state[pawn_idx - 7] > 6:
+                moves.append((pawn_idx, 1, pawn_idx - 7, self.state[pawn_idx - 7])\
+                                + additional_state_info)
+            elif pawn_idx // 8 == 3 and (pawn_idx + 1) % 8 == self.state[67]:
+                moves.append((pawn_idx, 1, pawn_idx - 7, 0) + additional_state_info\
+                             + (pawn_idx + 1, 0, pawn_idx + 1, 7))
         return moves
 
     def get_black_promotion_moves(self, pawn_idx: int) -> list[tuple]:
@@ -396,14 +406,26 @@ class MainEngine:
                             + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
 
         # Attack left:
-        if pawn_idx % 8 > 0 and 0 < self.state[pawn_idx + 7] < 7:
-            moves.append((pawn_idx, 7, pawn_idx + 7, self.state[pawn_idx + 7])\
-                            + additional_state_info)
+        if pawn_idx % 8 > 0:
+            # If there is a piece to take
+            if 0 < self.state[pawn_idx + 7] < 7:
+                moves.append((pawn_idx, 7, pawn_idx + 7, self.state[pawn_idx + 7])\
+                                + additional_state_info)
+            # If the pawn can is on the right rank and file to take via en passant
+            elif pawn_idx // 8 == 4 and (pawn_idx - 1) % 8 == self.state[67]:
+                moves.append((pawn_idx, 7, pawn_idx + 7, 0) + additional_state_info\
+                             + (pawn_idx - 1, 0, pawn_idx - 1, 1))
 
         # Attack right
-        if pawn_idx % 8 < 7 and 0 < self.state[pawn_idx + 9] < 7:
-            moves.append((pawn_idx, 7, pawn_idx + 9, self.state[pawn_idx + 9])\
-                            + additional_state_info)
+        if pawn_idx % 8 < 7:
+            # If there is a piece to take
+            if 0 < self.state[pawn_idx + 9] < 7:
+                moves.append((pawn_idx, 7, pawn_idx + 9, self.state[pawn_idx + 9])\
+                                + additional_state_info)
+            # If the pawn can is on the right rank and file to take via en passant
+            elif pawn_idx // 8 == 4 and (pawn_idx + 1) % 8 == self.state[67]:
+                moves.append((pawn_idx, 7, pawn_idx + 9, 0) + additional_state_info\
+                             + (pawn_idx + 1, 0, pawn_idx + 1, 1))
         return moves
 
     def get_pawn_moves(self, pawn_idx: int) -> list[tuple]:

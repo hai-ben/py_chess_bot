@@ -664,6 +664,70 @@ MOVE_TEST_DICT = {
          ["w_rook"] * 4 + ["w_bishop"] * 4],
         ("get_pawn_moves", [SQUARE_IDX["b2"]])
     ),
+    "WHITE_EN_PASSANT_TAKE_LEFT": (
+        [("c5", "w_pawn"), (EP_IDX, EP_FILE["b"]), ("b5", "b_pawn")],
+        [["c5"] * 2,
+         ["w_pawn"] * 2,
+         ["c6", "b6"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b1111] * 2,
+         [EP_FILE["b"]] * 2,
+         [-1] * 2,
+         [None, "b5"],
+         [None, "empty"],
+         [None, "b5"],
+         [None, "b_pawn"]],
+        ("get_pawn_moves", [SQUARE_IDX["c5"]])
+    ),
+    "WHITE_EN_PASSANT_TAKE_RIGHT": (
+        [("c5", "w_pawn"), (EP_IDX, EP_FILE["d"]), ("d5", "b_pawn")],
+        [["c5"] * 2,
+         ["w_pawn"] * 2,
+         ["c6", "d6"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b1111] * 2,
+         [EP_FILE["d"]] * 2,
+         [-1] * 2,
+         [None, "d5"],
+         [None, "empty"],
+         [None, "d5"],
+         [None, "b_pawn"]],
+        ("get_pawn_moves", [SQUARE_IDX["c5"]])
+    ),
+    "BLACK_EN_PASSANT_TAKE_LEFT": (
+        [("a4", "w_pawn"), (EP_IDX, EP_FILE["a"]), ("b4", "b_pawn"), (TURN_IDX, False)],
+        [["b4"] * 2,
+         ["b_pawn"] * 2,
+         ["b3", "a3"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b1111] * 2,
+         [EP_FILE["a"]] * 2,
+         [-1] * 2,
+         [None, "a4"],
+         [None, "empty"],
+         [None, "a4"],
+         [None, "w_pawn"]],
+        ("get_pawn_moves", [SQUARE_IDX["b4"]])
+    ),
+    "BLACK_EN_PASSANT_TAKE_RIGHT": (
+        [("c4", "w_pawn"), (EP_IDX, EP_FILE["c"]), ("b4", "b_pawn"), (TURN_IDX, False)],
+        [["b4"] * 2,
+         ["b_pawn"] * 2,
+         ["b3", "c3"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b1111] * 2,
+         [EP_FILE["c"]] * 2,
+         [-1] * 2,
+         [None, "c4"],
+         [None, "empty"],
+         [None, "c4"],
+         [None, "w_pawn"]],
+        ("get_pawn_moves", [SQUARE_IDX["b4"]])
+    ),
 }
 
 
@@ -702,8 +766,8 @@ def test_get_moves(empty_board: MainEngine, test_key):
             (SQUARE_IDX[from_tile], SQUARE_STATES[from_state],
              SQUARE_IDX[to_tile], SQUARE_STATES[to_state],
              castle_from, castle_to, ep_from, ep_to,
-             SQUARE_IDX[from2_tile], SQUARE_STATES[from2_state],
-             SQUARE_IDX[to2_tile], SQUARE_STATES[to2_state],)
+             SQUARE_IDX.get(from2_tile, None), SQUARE_STATES.get(from2_state, None),
+             SQUARE_IDX.get(to2_tile, None), SQUARE_STATES.get(to2_state, None),)
             for from_tile, from_state, to_tile, to_state,
                 castle_from, castle_to, ep_from, ep_to,
                 from2_tile, from2_state, to2_tile, to2_state, in zip(*instruction_gen_args))
@@ -729,16 +793,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_enpassant_take():
-    # TODO:
-    pass
-
-
-def test_enpassant_no_take():
-    # TODO:
-    pass
 
 
 def test_short_castle():
