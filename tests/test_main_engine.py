@@ -227,7 +227,7 @@ MOVE_TEST_DICT = {
          [-1] * 8],
         ("get_king_moves", [])
     ),
-    "BLACK_KING_FRIENDLY_TAKE": (
+    "BLACK_KING_ALLY_TAKE": (
         [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "e"), ("f4", "b_pawn")],
         [["e3"] * 7,
          ["b_king"] * 7,
@@ -238,7 +238,79 @@ MOVE_TEST_DICT = {
          [EP_FILE["e"]] * 7,
          [-1] * 7],
         ("get_king_moves", [])
-    )
+    ),
+    "WHITE_KNIGHT_EMPTY": (
+        [("c5", "w_knight")],
+        [["c5"] * 8,
+         ["w_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 8],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "WHITE_KNIGHT_ENEMY_TAKE": (
+        [("c5", "w_knight"), ("a6", "b_queen")],
+        [["c5"] * 8,
+         ["w_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 7 + ["b_queen"]],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "WHITE_KNIGHT_ALLY_TAKE": (
+        [("c5", "w_knight"), ("d3", "w_rook")],
+        [["c5"] * 7,
+         ["w_knight"] * 7,
+         ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 7],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "WHITE_KNIGHT_UNSET_EP": (
+        [("c5", "w_knight"), (EP_IDX, EP_FILE["e"])],
+        [["c5"] * 8,
+         ["w_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 8,
+         [0b1111] * 8,
+         [0b1111] * 8,
+         [EP_FILE["e"]] * 8,
+         [-1] * 8],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "BLACK_KNIGHT_EMPTY": (
+        [("c5", "b_knight"), (TURN_IDX, False)],
+        [["c5"] * 8,
+         ["b_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 8],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "BLACK_KNIGHT_ENEMY_TAKE": (
+        [("c5", "b_knight"), ("a6", "w_queen"), (TURN_IDX, False)],
+        [["c5"] * 8,
+         ["b_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 7 + ["w_queen"]],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "BLACK_KNIGHT_ALLY_TAKE": (
+        [("c5", "b_knight"), ("d3", "b_rook"), (TURN_IDX, False)],
+        [["c5"] * 7,
+         ["b_knight"] * 7,
+         ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 7],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
+    "BLACK_KNIGHT_UNSET_EP": (
+        [("c5", "b_knight"), (EP_IDX, EP_FILE["f"]), (TURN_IDX, False)],
+        [["c5"] * 8,
+         ["b_knight"] * 8,
+         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 8,
+         [0b1111] * 8,
+         [0b1111] * 8,
+         [EP_FILE["f"]] * 8,
+         [-1] * 8],
+        ("get_knight_moves", [SQUARE_IDX["c5"]])
+    ),
 }
 
 
@@ -287,12 +359,13 @@ def test_get_moves(empty_board: MainEngine, test_key):
     actual_instructions = set(getattr(empty_board, func)(*args))
     print(f"{actual_instructions=}")
     print(f"{expected_instructions=}")
+
+    # Redundant checking for easy debugging
+    for move in actual_instructions:
+        assert move in expected_instructions
+    for move in expected_instructions:
+        assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_knight_moves_black():
-    # TODO:
-    pass
 
 
 def test_bishop_move():

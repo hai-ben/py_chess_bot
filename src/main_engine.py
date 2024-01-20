@@ -1,6 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
-from src.resources.move_dict import KING_MOVES
+from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -150,7 +150,7 @@ class MainEngine:
         self.hash = self.hash_stack.pop()
 
     def get_king_moves(self) -> list[tuple]:
-        """Gets all the possible king move isntructions (not castling) for the active player"""
+        """Gets all the possible king move instructions (not castling) for the active player"""
         # These statements can be merged but it requires additional variable assignment
         # If it's white's turn
         if self.state[-1]:
@@ -173,4 +173,36 @@ class MainEngine:
              self.state[66], castle_to_state, self.state[67], -1)
             for target_idx in KING_MOVES[king_idx]
             if self.state[target_idx] < 7
+        ]
+
+    def get_knight_moves(self, knight_idx: int) -> list[tuple]:
+        """Gets all the possible knight move instructions for the active player"""
+        if self.state[-1]:
+            if self.state[67] > 0:
+                return [
+                    (knight_idx, self.state[knight_idx],
+                        target_idx, self.state[target_idx],
+                        self.state[66], self.state[66], self.state[67], -1)
+                    for target_idx in KNIGHT_MOVES[knight_idx]
+                        if self.state[target_idx] == 0 or self.state[target_idx] > 6
+                ]
+            return [
+                (knight_idx, self.state[knight_idx],
+                    target_idx, self.state[target_idx])
+                for target_idx in KNIGHT_MOVES[knight_idx]
+                    if self.state[target_idx] == 0 or self.state[target_idx] > 6
+            ]
+        if self.state[67] > 0:
+            return [
+                (knight_idx, self.state[knight_idx],
+                    target_idx, self.state[target_idx],
+                    self.state[66], self.state[66], self.state[67], -1)
+                for target_idx in KNIGHT_MOVES[knight_idx]
+                    if self.state[target_idx] < 7
+            ]
+        return [
+            (knight_idx, self.state[knight_idx],
+                target_idx, self.state[target_idx])
+            for target_idx in KNIGHT_MOVES[knight_idx]
+                if self.state[target_idx] < 7
         ]
