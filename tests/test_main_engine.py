@@ -520,6 +520,14 @@ MOVE_TEST_DICT = {
          [EP_FILE["h"]] * 23,
          [-1] * 23],
         ("get_queen_moves", [SQUARE_IDX["d5"]])
+    ),
+    "WHITE_PAWN_SINGLE_MOVE_SIMPLE": (
+        [("h3", "w_pawn")],
+        [["h3"],
+         ["w_pawn"],
+         ["h4"],
+         ["empty"]],
+        ("get_pawn_moves", [SQUARE_IDX["h3"]])
     )
 }
 
@@ -577,11 +585,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_queen_move():
-    # TODO:
-    pass
 
 
 def test_pawn_single_move():
@@ -695,5 +698,14 @@ def test_get_game_notation():
 
 
 def test_play_game_from_notation():
+    # TODO
+    pass
+
+
+def test_hash_pawn_promote():
+    pass
+
+
+def test_hash_en_passant_take():
     # TODO
     pass

@@ -44,15 +44,24 @@ A set of operations that transforms board state A to board state B is tuple of l
     * post_move_castle_state
     * pre_move_en_passant_state
     * post_move_en_passant_state
-* The following are only included if the move is a castle or en_passant_take
-    * origin_tile2_index (used for rook or deleting pawn)
-    * origin_tile2_state (used for rook or deleting pawn)
+* The following are used for a second move set, to do things like castling, en_passant pawn deletion, or pawn promotion
+    * origin_tile2_index
+    * origin_tile2_state
     * destiniation_tile2_index
     * destiniation_tile2_state
 
-It is assumed that the player to play changes during each transition.
-A paired pre/post entry value None means there is no changes.
-This setup makes it very easy to iterate over a tuple to modify a board state as well as updating Zobrist hashes.
+Here are some example instruction sets:
+* Black takes a rook on a3 with their knight: ```("c4", "b_knight", "a3", "w_rook")```
+* White double moves a pawn: ```("d2", "w_pawn", "d4", "empty", 0b1111, 0b1111, -1, "d-file")```
+* Black moves their king: ```("e8", "b_king", "f7", "b_king", "empty", 0b1111, 0b0011, "d-file", -1)```
+* A short castle for white: ```("e1", "w_king", "g1", "empty", 0b1111, 0b1100, "h1", "w_rook", "f1", "empty")```
+* Black takes a pawn on the g-file via en passant: ```("f4", "b_pawn", "g3", "empty", 0b1011, 0b1011, "g-file", -1, "g4", "empty", "g4", "w_pawn")```
+* White promotes a pawn on b8 ```("b7", "w_pawn", "b7", "w_queen", 0b0000, 0b0000, -1, -1, "b7", "w_queen", "b8", "empty")```
+
+Additional Notes:
+* The order for the double instruction sets is important to make accurate hashes.
+* It is assumed that the player to play changes during each transition.
+* This setup makes it very easy to iterate over a tuple to modify a board state as well as updating Zobrist hashes.
 
 ## Board Sate Tracking
 ### Engine
