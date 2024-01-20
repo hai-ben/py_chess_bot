@@ -1,6 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
-from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES
+from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -176,7 +176,8 @@ class MainEngine:
         ]
 
     def get_knight_moves(self, knight_idx: int) -> list[tuple]:
-        """Gets all the possible knight move instructions for the active player"""
+        """Gets all the possible knight move instructions for the active player
+        for the knight on knight_idx"""
         if self.state[-1]:
             if self.state[67] > 0:
                 return [
@@ -206,3 +207,30 @@ class MainEngine:
             for target_idx in KNIGHT_MOVES[knight_idx]
                 if self.state[target_idx] < 7
         ]
+
+    def get_bishop_moves(self, bishop_idx: int) -> list[tuple]:
+        """Gets all the possible bishop move instructions for
+        the active player for the bishop on bishop_idx"""
+        move_list = []
+        additional_state_info = ()
+        if self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+
+        for direction in BISHOP_MOVES[bishop_idx]:
+            for square_idx in direction:
+                if self.state[square_idx] == 0:
+                    move_list.append((bishop_idx, self.state[bishop_idx],
+                                      square_idx, self.state[square_idx])\
+                                     + additional_state_info)
+                    continue
+                if self.state[-1] and self.state[square_idx] > 6:
+                    move_list.append((bishop_idx, self.state[bishop_idx],
+                                        square_idx, self.state[square_idx])\
+                                        + additional_state_info)
+                    break
+                if not self.state[-1] and self.state[square_idx] < 7:
+                    move_list.append((bishop_idx, self.state[bishop_idx],
+                                      square_idx, self.state[square_idx])\
+                                     + additional_state_info)
+                break
+        return move_list

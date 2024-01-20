@@ -311,6 +311,78 @@ MOVE_TEST_DICT = {
          [-1] * 8],
         ("get_knight_moves", [SQUARE_IDX["c5"]])
     ),
+    "WHITE_BISHOP_EMPTY": (
+        [("f5", "w_bishop")],
+        [["f5"] * 11,
+         ["w_bishop"] * 11,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 11],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "WHITE_BISHOP_ENEMY_TAKE": (
+        [("f5", "w_bishop"), ("d7", "b_queen")],
+        [["f5"] * 10,
+         ["w_bishop"] * 10,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7"],
+         ["empty"] * 9 + ["b_queen"]],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "WHITE_BISHOP_ALLY_TAKE": (
+        [("f5", "w_bishop"), ("e4", "w_rook")],
+        [["f5"] * 7,
+         ["w_bishop"] * 7,
+         ["g6", "h7", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 7],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "WHITE_BISHOP_UNSET_EP": (
+        [("f5", "w_bishop"), (EP_IDX, EP_FILE["a"])],
+        [["f5"] * 11,
+         ["w_bishop"] * 11,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 11,
+         [0b1111] * 11,
+         [0b1111] * 11,
+         [EP_FILE["a"]] * 11,
+         [-1] * 11],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "BLACK_BISHOP_EMPTY": (
+        [("f5", "b_bishop"), (TURN_IDX, False)],
+        [["f5"] * 11,
+         ["b_bishop"] * 11,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 11],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "BLACK_BISHOP_ENEMY_TAKE": (
+        [("f5", "b_bishop"), ("d7", "w_queen"), (TURN_IDX, False)],
+        [["f5"] * 10,
+         ["b_bishop"] * 10,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7"],
+         ["empty"] * 9 + ["w_queen"]],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "BLACK_BISHOP_ALLY_TAKE": (
+        [("f5", "b_bishop"), ("e4", "b_rook"), (TURN_IDX, False)],
+        [["f5"] * 7,
+         ["b_bishop"] * 7,
+         ["g6", "h7", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 7],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "BLACK_BISHOP_UNSET_EP": (
+        [("f5", "b_bishop"), (EP_IDX, EP_FILE["a"]), (TURN_IDX, False)],
+        [["f5"] * 11,
+         ["b_bishop"] * 11,
+         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
+         ["empty"] * 11,
+         [0b1111] * 11,
+         [0b1111] * 11,
+         [EP_FILE["a"]] * 11,
+         [-1] * 11],
+        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
 }
 
 
@@ -361,16 +433,12 @@ def test_get_moves(empty_board: MainEngine, test_key):
     print(f"{expected_instructions=}")
 
     # Redundant checking for easy debugging
+    assert len(actual_instructions) == len(expected_instructions)
     for move in actual_instructions:
         assert move in expected_instructions
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_bishop_move():
-    # TODO:
-    pass
 
 
 def test_rook_move():
