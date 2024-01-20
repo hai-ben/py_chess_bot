@@ -38,7 +38,18 @@ def move_dict_for_directions(vectors: list[tuple[int]]) -> dict[int: list[list[i
 
 def pawn_single_move_generator(player_is_white: bool) -> dict[int, tuple]:
     """Generates the instruction set to move a pawn forward"""
-    # TODO: Add promotion moves
     if player_is_white:
-        return {idx: (idx, 1, idx - 8, 0) for idx in range(55, 15, -1)}
-    return {idx: (idx, 7, idx + 8, 0) for idx in range(8, 48)}
+        moves = {idx: (idx, 1, idx - 8, 0) for idx in range(55, 15, -1)}
+        for idx in range(14, 7, -1):
+            move_tuples = []
+            for piece in range(2, 6):
+                move_tuples.append(((idx, 1, idx, piece), (idx, piece, idx - 8, 0)))
+            moves[idx] = tuple(move_tuples)
+        return moves
+    moves = {idx: (idx, 7, idx + 8, 0) for idx in range(8, 48)}
+    for idx in range(48, 56):
+        move_tuples = []
+        for piece in range(8, 12):
+            move_tuples.append(((idx, 7, idx, piece), (idx, piece, idx + 8, 0)))
+        moves[idx] = tuple(move_tuples)
+    return moves

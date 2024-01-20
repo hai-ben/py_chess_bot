@@ -581,6 +581,55 @@ MOVE_TEST_DICT = {
          [None, EP_FILE["a"]]],
         ("get_pawn_moves", [SQUARE_IDX["a7"]])
     ),
+    "WHITE_PAWN_ATTACK": (
+        [("d5", "w_pawn"), ("d6", "b_pawn"), ("e6", "b_rook"), ("c6", "b_bishop")],
+        [["d5"] * 2,
+         ["w_pawn"] * 2,
+         ["e6", "c6"],
+         ["b_rook", "b_bishop"]],
+        ("get_pawn_moves", [SQUARE_IDX["d5"]])
+    ),
+    "BLACK_PAWN_ATTACK": (
+        [("d5", "b_pawn"), ("d4", "b_pawn"), ("e4", "w_rook"),
+         ("c4", "w_bishop"), (TURN_IDX, False)],
+        [["d5"] * 2,
+         ["b_pawn"] * 2,
+         ["e4", "c4"],
+         ["w_rook", "w_bishop"]],
+        ("get_pawn_moves", [SQUARE_IDX["d5"]])
+    ),
+    "WHITE_PAWN_PROMOTE": (
+        [("d7", "w_pawn"), (EP_IDX, EP_FILE["b"])],
+        [["d7"] * 4,
+         ["w_pawn"] * 4,
+         ["d7"] * 4,
+         ["w_queen", "w_bishop", "w_rook", "w_knight"],
+         [0b1111] * 4,
+         [0b1111] * 4,
+         [EP_FILE["b"]] * 4,
+         [-1] * 4,
+         ["d7"] * 4,
+         ["w_queen", "w_bishop", "w_rook", "w_knight"],
+         ["d8"] * 4,
+         ["empty"] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["d7"]])
+    ),
+    "BLACK_PAWN_PROMOTE": (
+        [("b2", "b_pawn"), (EP_IDX, EP_FILE["b"]), (TURN_IDX, False)],
+        [["b2"] * 4,
+         ["b_pawn"] * 4,
+         ["b2"] * 4,
+         ["b_queen", "b_bishop", "b_rook", "b_knight"],
+         [0b1111] * 4,
+         [0b1111] * 4,
+         [EP_FILE["b"]] * 4,
+         [-1] * 4,
+         ["b2"] * 4,
+         ["b_queen", "b_bishop", "b_rook", "b_knight"],
+         ["b1"] * 4,
+         ["empty"] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["b2"]])
+    ),
 }
 
 
@@ -646,16 +695,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_pawn_take():
-    # TODO:
-    pass
-
-
-def test_pawn_promote_no_take():
-    # TODO:
-    pass
 
 
 def test_pawn_promote_take():

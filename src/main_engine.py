@@ -297,20 +297,59 @@ class MainEngine:
 
         # If it's white's turn
         if self.state[-1]:
-            # Check for single move ahead
+            # If the pawn will promote
+            if pawn_idx // 8 == 1:
+                if self.state[pawn_idx - 8] == 0:
+                    _additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+                    for move_a, move_b in PAWN_SINGLE_MOVES_WHITE[pawn_idx]:
+                        moves.append(move_a + _additional_state_info + move_b)
+                return moves
+
+            # If the pawn is not blocked
             if self.state[pawn_idx - 8] == 0:
+                # Add the single move
                 moves.append(PAWN_SINGLE_MOVES_WHITE[pawn_idx] + additional_state_info)
-                # Check for double move ahead
+
+                # If the pawn is on the starting rank, and it's not blocked from double move
                 if pawn_idx // 8 == 6 and self.state[pawn_idx - 16] == 0:
                     moves.append(PAWN_DOUBLE_MOVES_WHITE[pawn_idx]\
-                                 + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
+                                + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
+
+            # Attack left
+            if pawn_idx % 8 > 0 and self.state[pawn_idx - 9] > 6:
+                moves.append((pawn_idx, 1, pawn_idx - 9, self.state[pawn_idx - 9])\
+                             + additional_state_info)
+
+            # Attack right
+            if pawn_idx % 8 < 7 and self.state[pawn_idx - 7] > 6:
+                moves.append((pawn_idx, 1, pawn_idx - 7, self.state[pawn_idx - 7])\
+                             + additional_state_info)
             return moves
 
         # Otherwsie it's black's turn
+        # If the pawn will promote
+        print(pawn_idx)
+        if pawn_idx // 8 == 6:
+            if self.state[pawn_idx + 8] == 0:
+                _additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+                for move_a, move_b in PAWN_SINGLE_MOVES_BLACK[pawn_idx]:
+                    moves.append(move_a + _additional_state_info + move_b)
+            return moves
+
         if self.state[pawn_idx + 8] == 0:
             moves.append(PAWN_SINGLE_MOVES_BLACK[pawn_idx] + additional_state_info)
             # Check for double move ahead
             if pawn_idx // 8 == 1 and self.state[pawn_idx + 16] == 0:
                 moves.append(PAWN_DOUBLE_MOVES_BLACK[pawn_idx]\
                             + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
+
+        # Attack left:
+        if pawn_idx % 8 > 0 and 0 < self.state[pawn_idx + 7] < 7:
+            moves.append((pawn_idx, 7, pawn_idx + 7, self.state[pawn_idx + 7])\
+                            + additional_state_info)
+
+        # Attack right
+        if pawn_idx % 8 < 7 and 0 < self.state[pawn_idx + 9] < 7:
+            moves.append((pawn_idx, 7, pawn_idx + 9, self.state[pawn_idx + 9])\
+                            + additional_state_info)
         return moves
