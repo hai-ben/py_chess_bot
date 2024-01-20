@@ -538,14 +538,48 @@ MOVE_TEST_DICT = {
         ("get_pawn_moves", [SQUARE_IDX["a6"]])
     ),
     "WHITE_PAWN_BLOCKED_ALLY": (
-        [("h3", "w_pawn"), ("h4", "w_bishop")],
+        [("h2", "w_pawn"), ("h3", "w_bishop")],
         [[] * 4],
-        ("get_pawn_moves", [SQUARE_IDX["h3"]])
+        ("get_pawn_moves", [SQUARE_IDX["h2"]])
     ),
     "WHITE_PAWN_BLOCKED_ENEMY": (
-        [("h3", "w_pawn"), ("h4", "b_rook")],
+        [("h2", "w_pawn"), ("h3", "b_rook")],
         [[] * 4],
-        ("get_pawn_moves", [SQUARE_IDX["h3"]])
+        ("get_pawn_moves", [SQUARE_IDX["h2"]])
+    ),
+    "BLACK_PAWN_BLOCKED_ALLY": (
+        [("a7", "w_pawn"), ("a6", "b_bishop"), (TURN_IDX, False)],
+        [[] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["a7"]])
+    ),
+    "BLACK_PAWN_BLOCKED_ENEMY": (
+        [("a7", "w_pawn"), ("a6", "w_rook"), (TURN_IDX, False)],
+        [[] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["a7"]])
+    ),
+    "WHITE_PAWN_DOUBLE_MOVE": (
+        [("h2", "w_pawn")],
+        [["h2"] * 2,
+         ["w_pawn"] * 2,
+         ["h3", "h4"],
+         ["empty"] * 2,
+         [None, 0b1111],
+         [None, 0b1111],
+         [None, -1],
+         [None, EP_FILE["h"]]],
+        ("get_pawn_moves", [SQUARE_IDX["h2"]])
+    ),
+    "BLACK_PAWN_DOUBLE_MOVE": (
+        [("a7", "w_pawn"), (TURN_IDX, False)],
+        [["a7"] * 2,
+         ["b_pawn"] * 2,
+         ["a6", "a5"],
+         ["empty"] * 2,
+         [None, 0b1111],
+         [None, 0b1111],
+         [None, -1],
+         [None, EP_FILE["a"]]],
+        ("get_pawn_moves", [SQUARE_IDX["a7"]])
     ),
 }
 
@@ -591,6 +625,15 @@ def test_get_moves(empty_board: MainEngine, test_key):
                 castle_from, castle_to, ep_from, ep_to,
                 from2_tile, from2_state, to2_tile, to2_state, in zip(*instruction_gen_args))
 
+    # Remove None instructions to allow for short instructions:
+    new_set = set()
+    for item in expected_instructions:
+        if None in item:
+            new_set.add(item[:item.index(None)])
+        else:
+            new_set.add(item)
+    expected_instructions = new_set
+
     # Check it against what the engine returns
     actual_instructions = set(getattr(empty_board, func)(*args))
     print(f"{actual_instructions=}")
@@ -603,11 +646,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_pawn_double_move():
-    # TODO:
-    pass
 
 
 def test_pawn_take():

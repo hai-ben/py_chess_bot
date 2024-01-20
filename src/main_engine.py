@@ -1,7 +1,8 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
 from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
-    QUEEN_MOVES, PAWN_SINGLE_MOVES
+    QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
+    PAWN_DOUBLE_MOVES_BLACK
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -294,6 +295,22 @@ class MainEngine:
         else:
             additional_state_info = ()
 
-        if self.state[PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx][2]] == 0:
-            moves.append(PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx] + additional_state_info)
+        # If it's white's turn
+        if self.state[-1]:
+            # Check for single move ahead
+            if self.state[pawn_idx - 8] == 0:
+                moves.append(PAWN_SINGLE_MOVES_WHITE[pawn_idx] + additional_state_info)
+                # Check for double move ahead
+                if pawn_idx // 8 == 6 and self.state[pawn_idx - 16] == 0:
+                    moves.append(PAWN_DOUBLE_MOVES_WHITE[pawn_idx]\
+                                 + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
+            return moves
+
+        # Otherwsie it's black's turn
+        if self.state[pawn_idx + 8] == 0:
+            moves.append(PAWN_SINGLE_MOVES_BLACK[pawn_idx] + additional_state_info)
+            # Check for double move ahead
+            if pawn_idx // 8 == 1 and self.state[pawn_idx + 16] == 0:
+                moves.append(PAWN_DOUBLE_MOVES_BLACK[pawn_idx]\
+                            + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
         return moves
