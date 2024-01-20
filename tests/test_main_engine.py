@@ -923,11 +923,6 @@ def test_get_moves(test_key):
     assert actual_instructions == expected_instructions
 
 
-def test_castle_blocked():
-    # TODO:
-    pass
-
-
 def test_in_check_rook():
     # TODO:
     pass
