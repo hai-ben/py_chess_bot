@@ -1,7 +1,7 @@
 """A set of constants/lookups to translate from chess-terms to the engine data structure"""
 from itertools import product
 
-SQUARE_IDX = {file + rank: idx for idx, (file, rank) in enumerate(product("abcdefgh", "87654321"))}
+SQUARE_IDX = {file + rank: idx for idx, (rank, file) in enumerate(product("87654321", "abcdefgh"))}
 B_KING_IDX = 64
 W_KING_IDX = 65
 CASTLE_IDX = 66

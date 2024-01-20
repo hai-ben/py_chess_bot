@@ -1,6 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
-from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES
+from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -208,29 +208,69 @@ class MainEngine:
                 if self.state[target_idx] < 7
         ]
 
-    def get_bishop_moves(self, bishop_idx: int) -> list[tuple]:
-        """Gets all the possible bishop move instructions for
-        the active player for the bishop on bishop_idx"""
-        move_list = []
-        additional_state_info = ()
-        if self.state[67] >= 0:
-            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+    def get_blockable_moves(self, start_idx:int, move_dict: dict,
+                            additional_state_info: tuple) -> list[tuple]:
+        """Goes through each move direction in move_dict for the square at
+        start_idx. Adds moves to move list until it runs into a piece or out
+        of moves. Performs a capture if the piece is not controlled by the
+        current player"""
 
-        for direction in BISHOP_MOVES[bishop_idx]:
+        move_list = []
+        for direction in move_dict[start_idx]:
             for square_idx in direction:
+                # If the square is empty, append a move and go to the next
                 if self.state[square_idx] == 0:
-                    move_list.append((bishop_idx, self.state[bishop_idx],
+                    move_list.append((start_idx, self.state[start_idx],
                                       square_idx, self.state[square_idx])\
                                      + additional_state_info)
                     continue
+                # If it's white's turn and the piece is controlled by black
                 if self.state[-1] and self.state[square_idx] > 6:
-                    move_list.append((bishop_idx, self.state[bishop_idx],
+                    move_list.append((start_idx, self.state[start_idx],
                                         square_idx, self.state[square_idx])\
                                         + additional_state_info)
-                    break
-                if not self.state[-1] and self.state[square_idx] < 7:
-                    move_list.append((bishop_idx, self.state[bishop_idx],
+                # If it's black's turn and the piece is controlled by white
+                elif not self.state[-1] and self.state[square_idx] < 7:
+                    move_list.append((start_idx, self.state[start_idx],
                                       square_idx, self.state[square_idx])\
                                      + additional_state_info)
+                # Don't continue in this direction as there is a piece here
                 break
         return move_list
+
+    def get_bishop_moves(self, bishop_idx: int) -> list[tuple]:
+        """Gets all the possible bishop move instructions for
+        the active player for the bishop on bishop_idx"""
+        if self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+        else:
+            additional_state_info = ()
+
+        return self.get_blockable_moves(bishop_idx, BISHOP_MOVES, additional_state_info)
+
+    def get_rook_moves(self, rook_idx: int) -> list[tuple]:
+        """Gets all the possible rook move instructions for
+        the active player for the rook on rook_idx"""
+        additional_state_info = ()
+
+        # Do castling information
+        if self.state[-1]:
+            if rook_idx == 63:  # White short castle
+                additional_state_info += (self.state[66], self.state[66] & 0b1110)
+            elif rook_idx == 56:  # White long castle
+                additional_state_info += (self.state[66], self.state[66] & 0b1101)
+        else:
+            print("Blacks turn", rook_idx)
+            if rook_idx == 0:  # Black long castle
+                additional_state_info += (self.state[66], self.state[66] & 0b0111)
+            elif rook_idx == 7:  # Black short castle
+                additional_state_info += (self.state[66], self.state[66] & 0b1011)
+
+        # Update en_passant information
+        if additional_state_info:
+            additional_state_info += (self.state[67], -1)
+        elif self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+
+        # Go through each direciton the rook can move
+        return self.get_blockable_moves(rook_idx, ROOK_MOVES, additional_state_info)

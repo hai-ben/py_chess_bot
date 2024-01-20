@@ -6,3 +6,4 @@ KING_MOVES = move_dict_for_vectors([(1, 1), (-1, 1), (1, -1), (-1, -1),
 KNIGHT_MOVES = move_dict_for_vectors([(2, 1), (2, -1), (-2, 1), (-2, -1),
                                     (1, 2), (-1, 2), (1, -2), (-1, -2)])
 BISHOP_MOVES = move_dict_for_directions([(1, 1), (-1, 1), (1, -1), (-1, -1)])
+ROOK_MOVES = move_dict_for_directions([(0, 1), (-1, 0), (0, -1), (1, 0)])

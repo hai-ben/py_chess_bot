@@ -44,9 +44,9 @@ A set of operations that transforms board state A to board state B is tuple of l
     * post_move_castle_state
     * pre_move_en_passant_state
     * post_move_en_passant_state
-* The following are only included if the move is a castle
-    * origin_tile2_index (used for rook in a castle command)
-    * origin_tile2_state (used for rook in a castle command)
+* The following are only included if the move is a castle or en_passant_take
+    * origin_tile2_index (used for rook or deleting pawn)
+    * origin_tile2_state (used for rook or deleting pawn)
     * destiniation_tile2_index
     * destiniation_tile2_state
 

@@ -264,15 +264,15 @@ MOVE_TEST_DICT = {
         ("get_knight_moves", [SQUARE_IDX["c5"]])
     ),
     "WHITE_KNIGHT_UNSET_EP": (
-        [("c5", "w_knight"), (EP_IDX, EP_FILE["e"])],
-        [["c5"] * 8,
-         ["w_knight"] * 8,
-         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
-         ["empty"] * 8,
-         [0b1111] * 8,
-         [0b1111] * 8,
-         [EP_FILE["e"]] * 8,
-         [-1] * 8],
+        [("c5", "w_knight"), (EP_IDX, EP_FILE["e"]), ("d3", "w_rook"), ("a6", "b_queen")],
+        [["c5"] * 7,
+         ["w_knight"] * 7,
+         ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 6 + ["b_queen"],
+         [0b1111] * 7,
+         [0b1111] * 7,
+         [EP_FILE["e"]] * 7,
+         [-1] * 7],
         ("get_knight_moves", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_EMPTY": (
@@ -300,15 +300,16 @@ MOVE_TEST_DICT = {
         ("get_knight_moves", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_UNSET_EP": (
-        [("c5", "b_knight"), (EP_IDX, EP_FILE["f"]), (TURN_IDX, False)],
-        [["c5"] * 8,
-         ["b_knight"] * 8,
-         ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
-         ["empty"] * 8,
-         [0b1111] * 8,
-         [0b1111] * 8,
-         [EP_FILE["f"]] * 8,
-         [-1] * 8],
+        [("c5", "b_knight"), (EP_IDX, EP_FILE["f"]), (TURN_IDX, False),
+         ("a6", "w_queen"), ("d3", "b_rook")],
+        [["c5"] * 7,
+         ["b_knight"] * 7,
+         ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
+         ["empty"] * 6 + ["w_queen"],
+         [0b1111] * 7,
+         [0b1111] * 7,
+         [EP_FILE["f"]] * 7,
+         [-1] * 7],
         ("get_knight_moves", [SQUARE_IDX["c5"]])
     ),
     "WHITE_BISHOP_EMPTY": (
@@ -336,15 +337,15 @@ MOVE_TEST_DICT = {
         ("get_bishop_moves", [SQUARE_IDX["f5"]])
     ),
     "WHITE_BISHOP_UNSET_EP": (
-        [("f5", "w_bishop"), (EP_IDX, EP_FILE["a"])],
-        [["f5"] * 11,
-         ["w_bishop"] * 11,
-         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
-         ["empty"] * 11,
-         [0b1111] * 11,
-         [0b1111] * 11,
-         [EP_FILE["a"]] * 11,
-         [-1] * 11],
+        [("f5", "w_bishop"), (EP_IDX, EP_FILE["a"]), ("e4", "w_rook"), ("d7", "b_queen")],
+        [["f5"] * 6,
+         ["w_bishop"] * 6,
+         ["g6", "h7", "g4", "h3", "e6", "d7"],
+         ["empty"] * 5 + ["b_queen"],
+         [0b1111] * 6,
+         [0b1111] * 6,
+         [EP_FILE["a"]] * 6,
+         [-1] * 6],
         ("get_bishop_moves", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_EMPTY": (
@@ -372,16 +373,108 @@ MOVE_TEST_DICT = {
         ("get_bishop_moves", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_UNSET_EP": (
-        [("f5", "b_bishop"), (EP_IDX, EP_FILE["a"]), (TURN_IDX, False)],
-        [["f5"] * 11,
-         ["b_bishop"] * 11,
-         ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
-         ["empty"] * 11,
-         [0b1111] * 11,
-         [0b1111] * 11,
-         [EP_FILE["a"]] * 11,
-         [-1] * 11],
+        [("f5", "b_bishop"), (EP_IDX, EP_FILE["a"]), (TURN_IDX, False),
+         ("e4", "b_rook"), ("d7", "w_queen")],
+        [["f5"] * 6,
+         ["b_bishop"] * 6,
+         ["g6", "h7", "g4", "h3", "e6", "d7"],
+         ["empty"] * 5 + ["w_queen"],
+         [0b1111] * 6,
+         [0b1111] * 6,
+         [EP_FILE["a"]] * 6,
+         [-1] * 6],
         ("get_bishop_moves", [SQUARE_IDX["f5"]])
+    ),
+    "WHITE_ROOK_BASICS": (
+        [("e4", "w_rook"), ("e6", "b_knight"), ("b4", "w_pawn")],
+        [["e4"] * 10,
+         ["w_rook"] * 10,
+         ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
+         ["b_knight"] + ["empty"] * 9],
+        ("get_rook_moves", [SQUARE_IDX["e4"]])
+    ),
+    "WHITE_ROOK_EP": (
+        [("e4", "w_rook"), ("e6", "b_knight"), ("b4", "w_pawn"), (EP_IDX, EP_FILE["b"])],
+        [["e4"] * 10,
+         ["w_rook"] * 10,
+         ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
+         ["b_knight"] + ["empty"] * 9,
+         [0b1111] * 10,
+         [0b1111] * 10,
+         [EP_FILE["b"]] * 10,
+         [-1] * 10],
+        ("get_rook_moves", [SQUARE_IDX["e4"]])
+    ),
+    "WHITE_ROOK_CASTLE_DISABLE_SHORT": (
+        [("h1", "w_rook"), ("f1", "b_bishop"), ("h5", "w_pawn"), (EP_IDX, EP_FILE["d"])],
+        [["h1"] * 5,
+         ["w_rook"] * 5,
+         ["f1", "g1", "h2", "h3", "h4"],
+         ["b_bishop"] + ["empty"] * 4,
+         [0b1111] * 5,
+         [0b1111 - CASTLE_STATES["w_short"]] * 5,
+         [EP_FILE["d"]] * 5,
+         [-1] * 5],
+        ("get_rook_moves", [SQUARE_IDX["h1"]])
+    ),
+    "WHITE_ROOK_CASTLE_DISABLE_LONG": (
+        [("a1", "w_rook"), ("f1", "b_queen"), ("a6", "w_pawn"), (EP_IDX, EP_FILE["g"])],
+        [["a1"] * 9,
+         ["w_rook"] * 9,
+         ["f1", "e1", "d1", "c1", "b1", "a2", "a3", "a4", "a5"],
+         ["b_queen"] + ["empty"] * 8,
+         [0b1111] * 9,
+         [0b1111 - CASTLE_STATES["w_long"]] * 9,
+         [EP_FILE["g"]] * 9,
+         [-1] * 9],
+        ("get_rook_moves", [SQUARE_IDX["a1"]])
+    ),
+    "BLACK_ROOK_BASICS": (
+        [("e4", "b_rook"), ("e6", "w_knight"), ("b4", "b_pawn"), (TURN_IDX, False)],
+        [["e4"] * 10,
+         ["b_rook"] * 10,
+         ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
+         ["w_knight"] + ["empty"] * 9],
+        ("get_rook_moves", [SQUARE_IDX["e4"]])
+    ),
+    "BLACK_ROOK_EP": (
+        [("e4", "b_rook"), ("e6", "w_knight"), ("b4", "b_pawn"),
+         (EP_IDX, EP_FILE["c"]), (TURN_IDX, False)],
+        [["e4"] * 10,
+         ["b_rook"] * 10,
+         ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
+         ["w_knight"] + ["empty"] * 9,
+         [0b1111] * 10,
+         [0b1111] * 10 ,
+         [EP_FILE["c"]] * 10,
+         [-1] * 10],
+        ("get_rook_moves", [SQUARE_IDX["e4"]])
+    ),
+    "BLACK_ROOK_CASTLE_DISABLE_SHORT": (
+        [("h8", "b_rook"), ("f8", "w_bishop"), ("h4", "b_pawn"),
+         (EP_IDX, EP_FILE["d"]), (TURN_IDX, False)],
+        [["h8"] * 5,
+         ["b_rook"] * 5,
+         ["f8", "g8", "h7", "h6", "h5"],
+         ["w_bishop"] + ["empty"] * 4,
+         [0b1111] * 5,
+         [0b1111 - CASTLE_STATES["b_short"]] * 5,
+         [EP_FILE["d"]] * 5,
+         [-1] * 5],
+        ("get_rook_moves", [SQUARE_IDX["h8"]])
+    ),
+    "BLACK_ROOK_CASTLE_DISABLE_LONG": (
+        [("a8", "b_rook"), ("f8", "w_queen"), ("a6", "b_pawn"),
+         (EP_IDX, EP_FILE["g"]), (TURN_IDX, False)],
+        [["a8"] * 6,
+         ["b_rook"] * 6,
+         ["f8", "e8", "d8", "c8", "b8", "a7"],
+         ["w_queen"] + ["empty"] * 5,
+         [0b1111] * 6,
+         [0b1111 - CASTLE_STATES["b_long"]] * 6,
+         [EP_FILE["g"]] * 6,
+         [-1] * 6],
+        ("get_rook_moves", [SQUARE_IDX["a8"]])
     ),
 }
 
@@ -439,11 +532,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_rook_move():
-    # TODO:
-    pass
 
 
 def test_queen_move():
