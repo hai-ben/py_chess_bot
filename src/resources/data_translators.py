@@ -16,11 +16,11 @@ SQUARE_STATES = {
 
 CASTLE_STATES = {
     "w_short": 0b0001,
-    "w_long": 0b0001,
-    "b_short": 0b0001,
-    "b_long": 0b0001
+    "w_long": 0b0010,
+    "b_short": 0b0100,
+    "b_long": 0b1000
 }
 
-EP_FILE = {None: -1} | {file_name: state for file_name, state in zip("abcdefgh", "01234567")}
+EP_FILE = {None: -1} | {file_name: int(idx) for file_name, idx in zip("abcdefgh", "01234567")}
 
 PLAYER_TURN = {"white": True, "black": False}

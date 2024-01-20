@@ -163,7 +163,7 @@ class MainEngine:
                 for target_idx in KING_MOVES[king_idx]
                 if self.state[target_idx] == 0 or self.state[target_idx] > 6
             ]
-        
+
         # Otherwise get the moves for black's king
         king_idx = self.state[64]
         castle_to_state = self.state[66] & 0b0011

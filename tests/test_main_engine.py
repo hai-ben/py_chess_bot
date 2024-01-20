@@ -32,24 +32,6 @@ def fixture_empty_board():
     return MainEngine([0] * 66 + [0b1111] + [-1] + [True])
 
 
-@pytest.fixture(name="w_king_e3")
-def fixture_w_king_e3(empty_board: MainEngine):
-    """Returns a board with no pieces except a white king_idx on e3, black's king idx is a8"""
-    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
-    empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
-    empty_board.hash = None
-    return empty_board
-
-
-@pytest.fixture(name="b_king_e3")
-def fixture_w_king_e3(empty_board: MainEngine):
-    """Returns a board with no pieces except a white king_idx on e3, black's king idx is a8"""
-    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["b_king"]
-    empty_board.state[B_KING_IDX] = SQUARE_IDX["e3"]
-    empty_board.hash = None
-    return empty_board
-
-
 def test_data_structs_init(engine: MainEngine):
     """Tests to make sure the data structures match documentation"""
     assert len(engine.state) == 69
@@ -184,60 +166,131 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-def test_get_king_moves_white(empty_board: MainEngine):
-    """Tests that the king is able to move, take enemy pieces, and not its own pieces"""
-    # Setup the board
-    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["w_king"]
-    empty_board.state[W_KING_IDX] = SQUARE_IDX["e3"]
+MOVE_TEST_DICT = {
+    "WHITE_KING_EMPTY": (
+        [("e3", "w_king"), (W_KING_IDX, "e3"), (EP_IDX, "b")],
+        [["e3"] * 8,
+         ["w_king"] * 8,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"],
+         ["empty"] * 8,
+         [0b1111] * 8,
+         [0b1100] * 8,
+         [EP_FILE["b"]] * 8,
+         [-1] * 8],
+        ("get_king_moves", [])
+    ),
+    "WHITE_KING_ENEMY_TAKE": (
+        [("e3", "w_king"), (W_KING_IDX, "e3"), (EP_IDX, "b"), ("e2", "b_pawn")],
+        [["e3"] * 8,
+         ["w_king"] * 8,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"],
+         ["b_pawn"] + ["empty"] * 7,
+         [0b1111] * 8,
+         [0b1100] * 8,
+         [EP_FILE["b"]] * 8,
+         [-1] * 8],
+        ("get_king_moves", [])
+    ),
+    "WHITE_KING_FRIENDLY_TAKE": (
+        [("e3", "w_king"), (W_KING_IDX, "e3"), (EP_IDX, "b"), ("f4", "w_pawn")],
+        [["e3"] * 7,
+         ["w_king"] * 7,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2"],
+         ["empty"] * 7,
+         [0b1111] * 7,
+         [0b1100] * 7,
+         [EP_FILE["b"]] * 7,
+         [-1] * 7],
+        ("get_king_moves", [])
+    ),
+    "BLACK_KING_EMPTY": (
+        [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "c")],
+        [["e3"] * 8,
+         ["b_king"] * 8,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"],
+         ["empty"] * 8,
+         [0b1111] * 8,
+         [0b0011] * 8,
+         [EP_FILE["c"]] * 8,
+         [-1] * 8],
+        ("get_king_moves", [])
+    ),
+    "BLACK_KING_ENEMY_TAKE": (
+        [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "d"), ("e2", "w_pawn")],
+        [["e3"] * 8,
+         ["b_king"] * 8,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"],
+         ["w_pawn"] + ["empty"] * 7,
+         [0b1111] * 8,
+         [0b0011] * 8,
+         [EP_FILE["d"]] * 8,
+         [-1] * 8],
+        ("get_king_moves", [])
+    ),
+    "BLACK_KING_FRIENDLY_TAKE": (
+        [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "e"), ("f4", "b_pawn")],
+        [["e3"] * 7,
+         ["b_king"] * 7,
+         ["e2", "e4", "d3", "d2", "d4", "f3", "f2"],
+         ["empty"] * 7,
+         [0b1111] * 7,
+         [0b0011] * 7,
+         [EP_FILE["e"]] * 7,
+         [-1] * 7],
+        ("get_king_moves", [])
+    )
+}
 
-    # The king can move to all the empty spots
-    expected_instructions = [
-        (SQUARE_IDX["e3"], SQUARE_STATES["w_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
-         0b1111, 0b1100, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"]
-    ]
-    # Using sets because order doesn't matter
-    assert set(expected_instructions) == set(empty_board.get_king_moves())
 
-    # The king can take other pieces
-    empty_board.state[SQUARE_IDX["e2"]] = SQUARE_STATES["b_pawn"]
-    expected_instructions[0] = (SQUARE_IDX["e3"], SQUARE_STATES["w_king"],
-                                SQUARE_IDX["e2"], SQUARE_STATES["b_pawn"],
-                                0b1111, 0b1100, -1, -1)
-    assert set(expected_instructions) == set(empty_board.get_king_moves())
+# Using the move test dict keys as test parameters for easier debugging
+@pytest.mark.parametrize("test_key", MOVE_TEST_DICT.keys())
+def test_get_moves(empty_board: MainEngine, test_key):
+    """After making modifications to empty board, this calls func_name of empty board with args
+    and asserts the set of that return value is the same as the set of the expected_instructions"""
+    # Unpack the test information
+    mods, instruction_gen_args, (func, args) = MOVE_TEST_DICT[test_key]
 
-    # The king can't take friendly pieces (the take on e2 is illegal)
-    empty_board.state[SQUARE_IDX["e2"]] = SQUARE_STATES["w_pawn"]
-    assert set(expected_instructions[1:]) == set(empty_board.get_king_moves())
+    # Unpack the modifications to the state and apply them
+    for idx, val in mods:
+        if not isinstance(idx, int):
+            idx = SQUARE_IDX[idx]
+        if not isinstance(val, (int, bool)):
+            val = SQUARE_STATES.get(
+                val, EP_FILE.get(val, PLAYER_TURN.get(val, SQUARE_IDX.get(val, None))))
+        empty_board.state[idx] = val
+
+    # Generate the instruction set
+    if len(instruction_gen_args) == 4:
+        expected_instructions = set(
+            (SQUARE_IDX[from_tile], SQUARE_STATES[from_state],
+             SQUARE_IDX[to_tile], SQUARE_STATES[to_state])
+            for from_tile, from_state, to_tile, to_state in zip(*instruction_gen_args))
+    elif len(instruction_gen_args) == 8:
+        expected_instructions = set(
+            (SQUARE_IDX[from_tile], SQUARE_STATES[from_state],
+             SQUARE_IDX[to_tile], SQUARE_STATES[to_state],
+             castle_from, castle_to, ep_from, ep_to)
+            for from_tile, from_state, to_tile, to_state,
+                castle_from, castle_to, ep_from, ep_to in zip(*instruction_gen_args))
+    else:  # This means len(instruction_gen_args) == 12
+        expected_instructions = set(
+            (SQUARE_IDX[from_tile], SQUARE_STATES[from_state],
+             SQUARE_IDX[to_tile], SQUARE_STATES[to_state],
+             castle_from, castle_to, ep_from, ep_to,
+             SQUARE_IDX[from2_tile], SQUARE_STATES[from2_state],
+             SQUARE_IDX[to2_tile], SQUARE_STATES[to2_state],)
+            for from_tile, from_state, to_tile, to_state,
+                castle_from, castle_to, ep_from, ep_to,
+                from2_tile, from2_state, to2_tile, to2_state, in zip(*instruction_gen_args))
+
+    # Check it against what the engine returns
+    actual_instructions = set(getattr(empty_board, func)(*args))
+    print(f"{actual_instructions=}")
+    print(f"{expected_instructions=}")
+    assert actual_instructions == expected_instructions
 
 
-def test_get_king_moves_black(empty_board: MainEngine):
-    """Tests that the king is able to move, take enemy pieces, and not its own pieces"""
-    # Setup the board
-    empty_board.state[TURN_IDX] = PLAYER_TURN["black"]
-    empty_board.state[SQUARE_IDX["e3"]] = SQUARE_STATES["b_king"]
-    empty_board.state[B_KING_IDX] = SQUARE_IDX["e3"]
-
-    # The king can move to all the empty spots
-    expected_instructions = [
-        (SQUARE_IDX["e3"], SQUARE_STATES["b_king"], SQUARE_IDX[to_tile], SQUARE_STATES["empty"],
-         0b1111, 0b0011, -1, -1) for to_tile in ["e2", "e4", "d3", "d2", "d4", "f3", "f2", "f4"]
-    ]
-    # Using sets because order doesn't matter
-    assert set(expected_instructions) == set(empty_board.get_king_moves())
-
-    # The king can take other pieces
-    empty_board.state[SQUARE_IDX["e2"]] = SQUARE_STATES["w_pawn"]
-    expected_instructions[0] = (SQUARE_IDX["e3"], SQUARE_STATES["b_king"],
-                                SQUARE_IDX["e2"], SQUARE_STATES["w_pawn"],
-                                0b1111, 0b0011, -1, -1)
-    assert set(expected_instructions) == set(empty_board.get_king_moves())
-
-    # The king can't take friendly pieces (the take on e2 is illegal)
-    empty_board.state[SQUARE_IDX["e2"]] = SQUARE_STATES["b_pawn"]
-    assert set(expected_instructions[1:]) == set(empty_board.get_king_moves())
-
-
-def test_knight_move():
+def test_knight_moves_black():
     # TODO:
     pass
 
