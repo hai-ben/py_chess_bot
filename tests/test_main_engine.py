@@ -476,6 +476,51 @@ MOVE_TEST_DICT = {
          [-1] * 6],
         ("get_rook_moves", [SQUARE_IDX["a8"]])
     ),
+    "WHITE_QUEEN_BASIC": (
+        [("d5", "w_queen"), ("d3", "b_rook"), ("f7", "w_king")],
+        [["d5"] * 23,
+         ["w_queen"] * 23,
+         ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
+          "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
+         ["b_rook"] + ["empty"] * 22],
+        ("get_queen_moves", [SQUARE_IDX["d5"]])
+    ),
+    "WHITE_QUEEN_EP": (
+        [("d5", "w_queen"), ("d3", "b_rook"), ("f7", "w_king"), (EP_IDX, EP_FILE["h"])],
+        [["d5"] * 23,
+         ["w_queen"] * 23,
+         ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
+          "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
+         ["b_rook"] + ["empty"] * 22,
+         [0b1111] * 23,
+         [0b1111] * 23,
+         [EP_FILE["h"]] * 23,
+         [-1] * 23],
+        ("get_queen_moves", [SQUARE_IDX["d5"]])
+    ),
+    "BLACK_QUEEN_BASIC": (
+        [("d5", "b_queen"), ("d3", "w_rook"), ("f7", "b_king"), (TURN_IDX, False)],
+        [["d5"] * 23,
+         ["b_queen"] * 23,
+         ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
+          "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
+         ["w_rook"] + ["empty"] * 22],
+        ("get_queen_moves", [SQUARE_IDX["d5"]])
+    ),
+    "BLACK_QUEEN_EP": (
+        [("d5", "b_queen"), ("d3", "w_rook"), ("f7", "b_king"),
+         (EP_IDX, EP_FILE["h"]), (TURN_IDX, False)],
+        [["d5"] * 23,
+         ["b_queen"] * 23,
+         ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
+          "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
+         ["w_rook"] + ["empty"] * 22,
+         [0b1111] * 23,
+         [0b1111] * 23,
+         [EP_FILE["h"]] * 23,
+         [-1] * 23],
+        ("get_queen_moves", [SQUARE_IDX["d5"]])
+    )
 }
 
 

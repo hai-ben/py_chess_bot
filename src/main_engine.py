@@ -1,6 +1,6 @@
 """Chess engine uses a list for a state and a graph to track relations"""
 from collections import deque
-from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES
+from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES, QUEEN_MOVES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -274,3 +274,13 @@ class MainEngine:
 
         # Go through each direciton the rook can move
         return self.get_blockable_moves(rook_idx, ROOK_MOVES, additional_state_info)
+
+    def get_queen_moves(self, queen_idx: int) -> list[tuple]:
+        """Gets all the possible bishop move instructions for
+        the active player for the bishop on bishop_idx"""
+        if self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+        else:
+            additional_state_info = ()
+
+        return self.get_blockable_moves(queen_idx, QUEEN_MOVES, additional_state_info)
