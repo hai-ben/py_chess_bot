@@ -294,5 +294,6 @@ class MainEngine:
         else:
             additional_state_info = ()
 
-        moves.append(PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx] + additional_state_info)
+        if self.state[PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx][2]] == 0:
+            moves.append(PAWN_SINGLE_MOVES[self.state[-1]][pawn_idx] + additional_state_info)
         return moves

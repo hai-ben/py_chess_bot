@@ -530,12 +530,22 @@ MOVE_TEST_DICT = {
         ("get_pawn_moves", [SQUARE_IDX["h3"]])
     ),
     "BLACK_PAWN_SINGLE_MOVE_SIMPLE": (
-        [("a7", "b_pawn"), (TURN_IDX, False)],
-        [["a7"],
+        [("a6", "b_pawn"), (TURN_IDX, False)],
+        [["a6"],
          ["b_pawn"],
-         ["a6"],
+         ["a5"],
          ["empty"]],
-        ("get_pawn_moves", [SQUARE_IDX["a7"]])
+        ("get_pawn_moves", [SQUARE_IDX["a6"]])
+    ),
+    "WHITE_PAWN_BLOCKED_ALLY": (
+        [("h3", "w_pawn"), ("h4", "w_bishop")],
+        [[] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["h3"]])
+    ),
+    "WHITE_PAWN_BLOCKED_ENEMY": (
+        [("h3", "w_pawn"), ("h4", "b_rook")],
+        [[] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["h3"]])
     ),
 }
 
