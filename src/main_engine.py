@@ -287,54 +287,106 @@ class MainEngine:
 
         return self.get_blockable_moves(queen_idx, QUEEN_MOVES, additional_state_info)
 
-    def get_pawn_moves(self, pawn_idx: int) -> list[tuple]:
-        """Gets all the possible pawn moves for the pawn on pawn_idx"""
+    def get_white_promotion_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the promotion moves for the white pawn on pawn_idx"""
         moves = []
+        additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+
+        # If the pawn can move forward
+        if self.state[pawn_idx - 8] == 0:
+            # There are some pre-generated tuples to use
+            for move_a, move_b in PAWN_SINGLE_MOVES_WHITE[pawn_idx]:
+                moves.append(move_a + additional_state_info + move_b)
+
+        # If the pawn can attack left and promote
+        if pawn_idx % 8 > 0 and self.state[pawn_idx - 9] > 6:
+            for promotion_piece in range(2, 6):
+                moves.append((pawn_idx, 1, pawn_idx, promotion_piece) + additional_state_info\
+                                + (pawn_idx, promotion_piece,
+                                pawn_idx - 9, self.state[pawn_idx - 9]))
+
+        # If the pawn can attack right and promote
+        if pawn_idx % 8 < 7 and self.state[pawn_idx - 7] > 6:
+            for promotion_piece in range(2, 6):
+                moves.append((pawn_idx, 1, pawn_idx, promotion_piece) + additional_state_info\
+                                + (pawn_idx, promotion_piece,
+                                pawn_idx - 7, self.state[pawn_idx - 7]))
+
+        return moves
+
+    def get_white_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the possible moves for the white pawn at pawn_idx"""
+        # If the pawn will promote on it's move
+        if pawn_idx // 8 == 1:
+            return self.get_white_promotion_moves(pawn_idx)
+
+        moves = []
+
+        # Only need the additional state_info if this move turns off en_passant
         if self.state[67] >= 0:
             additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
         else:
             additional_state_info = ()
 
-        # If it's white's turn
-        if self.state[-1]:
-            # If the pawn will promote
-            if pawn_idx // 8 == 1:
-                if self.state[pawn_idx - 8] == 0:
-                    _additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
-                    for move_a, move_b in PAWN_SINGLE_MOVES_WHITE[pawn_idx]:
-                        moves.append(move_a + _additional_state_info + move_b)
-                return moves
+        # If the pawn is not blocked
+        if self.state[pawn_idx - 8] == 0:
+            # Add the single move
+            moves.append(PAWN_SINGLE_MOVES_WHITE[pawn_idx] + additional_state_info)
 
-            # If the pawn is not blocked
-            if self.state[pawn_idx - 8] == 0:
-                # Add the single move
-                moves.append(PAWN_SINGLE_MOVES_WHITE[pawn_idx] + additional_state_info)
+            # If the pawn is on the starting rank, and it's not blocked from double move
+            if pawn_idx // 8 == 6 and self.state[pawn_idx - 16] == 0:
+                moves.append(PAWN_DOUBLE_MOVES_WHITE[pawn_idx]\
+                            + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
 
-                # If the pawn is on the starting rank, and it's not blocked from double move
-                if pawn_idx // 8 == 6 and self.state[pawn_idx - 16] == 0:
-                    moves.append(PAWN_DOUBLE_MOVES_WHITE[pawn_idx]\
-                                + (self.state[66], self.state[66], self.state[67], pawn_idx % 8))
+        # Attack left
+        if pawn_idx % 8 > 0 and self.state[pawn_idx - 9] > 6:
+            moves.append((pawn_idx, 1, pawn_idx - 9, self.state[pawn_idx - 9])\
+                            + additional_state_info)
 
-            # Attack left
-            if pawn_idx % 8 > 0 and self.state[pawn_idx - 9] > 6:
-                moves.append((pawn_idx, 1, pawn_idx - 9, self.state[pawn_idx - 9])\
-                             + additional_state_info)
+        # Attack right
+        if pawn_idx % 8 < 7 and self.state[pawn_idx - 7] > 6:
+            moves.append((pawn_idx, 1, pawn_idx - 7, self.state[pawn_idx - 7])\
+                            + additional_state_info)
+        return moves
 
-            # Attack right
-            if pawn_idx % 8 < 7 and self.state[pawn_idx - 7] > 6:
-                moves.append((pawn_idx, 1, pawn_idx - 7, self.state[pawn_idx - 7])\
-                             + additional_state_info)
-            return moves
+    def get_black_promotion_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the promotion moves for the black pawn on pawn_idx"""
+        moves = []
+        additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
 
-        # Otherwsie it's black's turn
+        # If the pawn can move forward
+        if self.state[pawn_idx + 8] == 0:
+            # There are some pre-generated tuples to use
+            for move_a, move_b in PAWN_SINGLE_MOVES_BLACK[pawn_idx]:
+                moves.append(move_a + additional_state_info + move_b)
+
+        # If the pawn can attack left and promote
+        if pawn_idx % 8 > 0 and 0 < self.state[pawn_idx + 7] < 7:
+            for promotion_piece in range(8, 12):
+                moves.append((pawn_idx, 7, pawn_idx, promotion_piece) + additional_state_info\
+                                + (pawn_idx, promotion_piece,
+                                pawn_idx + 7, self.state[pawn_idx + 7]))
+
+        # If the pawn can attack right and promote
+        if pawn_idx % 8 < 7 and 0 < self.state[pawn_idx + 9] < 7:
+            for promotion_piece in range(8, 12):
+                moves.append((pawn_idx, 7, pawn_idx, promotion_piece) + additional_state_info\
+                                + (pawn_idx, promotion_piece,
+                                pawn_idx + 9, self.state[pawn_idx + 9]))
+
+        return moves
+
+    def get_black_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the possible moves for the black pawn at pawn_idx"""
         # If the pawn will promote
-        print(pawn_idx)
         if pawn_idx // 8 == 6:
-            if self.state[pawn_idx + 8] == 0:
-                _additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
-                for move_a, move_b in PAWN_SINGLE_MOVES_BLACK[pawn_idx]:
-                    moves.append(move_a + _additional_state_info + move_b)
-            return moves
+            return self.get_black_promotion_moves(pawn_idx)
+
+        moves = []
+        if self.state[67] >= 0:
+            additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
+        else:
+            additional_state_info = ()
 
         if self.state[pawn_idx + 8] == 0:
             moves.append(PAWN_SINGLE_MOVES_BLACK[pawn_idx] + additional_state_info)
@@ -353,3 +405,10 @@ class MainEngine:
             moves.append((pawn_idx, 7, pawn_idx + 9, self.state[pawn_idx + 9])\
                             + additional_state_info)
         return moves
+
+    def get_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+        """Gets all the possible pawn moves for the pawn on pawn_idx"""
+        # If it's white's turn
+        if self.state[-1]:
+            return self.get_white_pawn_moves(pawn_idx)
+        return self.get_black_pawn_moves(pawn_idx)

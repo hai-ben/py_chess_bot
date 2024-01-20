@@ -630,6 +630,40 @@ MOVE_TEST_DICT = {
          ["empty"] * 4],
         ("get_pawn_moves", [SQUARE_IDX["b2"]])
     ),
+    "WHITE_PAWN_PROMOTE_TAKE": (
+        [("d7", "w_pawn"), (EP_IDX, EP_FILE["b"]), ("e8", "b_rook"), ("c8", "b_bishop"),
+         ("d8", "b_king")],
+        [["d7"] * 8,
+         ["w_pawn"] * 8,
+         ["d7"] * 8,
+         ["w_queen", "w_bishop", "w_rook", "w_knight"] * 2,
+         [0b1111] * 8,
+         [0b1111] * 8,
+         [EP_FILE["b"]] * 8,
+         [-1] * 8,
+         ["d7"] * 8,
+         ["w_queen", "w_bishop", "w_rook", "w_knight"] * 2,
+         ["e8"] * 4 + ["c8"] * 4,
+         ["b_rook"] * 4 + ["b_bishop"] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["d7"]])
+    ),
+    "BLACK_PAWN_PROMOTE_TAKE": (
+        [("b2", "b_pawn"), (EP_IDX, EP_FILE["b"]), (TURN_IDX, False),
+         ("a1", "w_rook"), ("c1", "w_bishop"), ("b1", "w_king")],
+        [["b2"] * 8,
+         ["b_pawn"] * 8,
+         ["b2"] * 8,
+         ["b_queen", "b_bishop", "b_rook", "b_knight"] * 2,
+         [0b1111] * 8,
+         [0b1111] * 8,
+         [EP_FILE["b"]] * 8,
+         [-1] * 8,
+         ["b2"] * 8,
+         ["b_queen", "b_bishop", "b_rook", "b_knight"] * 2,
+         ["a1"] * 4 + ["c1"] * 4,
+         ["w_rook"] * 4 + ["w_bishop"] * 4],
+        ("get_pawn_moves", [SQUARE_IDX["b2"]])
+    ),
 }
 
 
@@ -695,11 +729,6 @@ def test_get_moves(empty_board: MainEngine, test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
-
-
-def test_pawn_promote_take():
-    # TODO:
-    pass
 
 
 def test_enpassant_take():
