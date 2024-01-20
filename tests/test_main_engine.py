@@ -21,15 +21,28 @@ DOUBLE_INSTRUCTION = (3, STARTING_LIST_STATE[3], 9, STARTING_LIST_STATE[9],
 
 
 @pytest.fixture(name="engine")
-def fixture_blank_engine():
-    """Returns a blank MainEngine class"""
+def fixture_blank_engine() -> MainEngine:
+    """Returns a MainEngine class with defaults"""
     return MainEngine()
 
 
 @pytest.fixture(name="empty_board")
-def fixture_empty_board():
+def fixture_empty_board() -> MainEngine:
     """Returns a board with no pieces and both king_idx set to a8"""
     return MainEngine([0] * 66 + [0b1111] + [-1] + [True])
+
+
+def build_board(changed_tiles: list[tuple]) -> MainEngine:
+    """Updates the indicies of a empty MainEngine's state given the changed_tiles"""
+    board = MainEngine([0] * 66 + [0b1111] + [-1] + [True])
+    for idx, val in changed_tiles:
+        if not isinstance(idx, int):
+            idx = SQUARE_IDX[idx]
+        if not isinstance(val, (int, bool)):
+            val = SQUARE_STATES.get(
+                val, EP_FILE.get(val, PLAYER_TURN.get(val, SQUARE_IDX.get(val, None))))
+        board.state[idx] = val
+    return board
 
 
 def test_data_structs_init(engine: MainEngine):
@@ -728,25 +741,140 @@ MOVE_TEST_DICT = {
          [None, "w_pawn"]],
         ("get_pawn_moves", [SQUARE_IDX["b4"]])
     ),
+    "WHITE_CASTLE_MOVES_NO_RIGHTS": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0)],
+        [],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CASTLE_MOVES_NO_RIGHTS": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (CASTLE_IDX, 0), (TURN_IDX, False)],
+        [],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CASTLE_MOVES_SHORT": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0b1101)],
+        [["e1"],
+         ["w_king"],
+         ["g1"],
+         ["empty"],
+         [0b1101],
+         [0b1100],
+         [-1],
+         [-1],
+         ["h1"],
+         ["w_rook"],
+         ["f1"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CASTLE_MOVES_SHORT": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (CASTLE_IDX, 0b0110), (TURN_IDX, False)],
+        [["e8"],
+         ["b_king"],
+         ["g8"],
+         ["empty"],
+         [0b0110],
+         [0b0010],
+         [-1],
+         [-1],
+         ["h8"],
+         ["b_rook"],
+         ["f8"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CASTLE_MOVES_LONG": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0b1010)],
+        [["e1"],
+         ["w_king"],
+         ["c1"],
+         ["empty"],
+         [0b1010],
+         [0b1000],
+         [-1],
+         [-1],
+         ["a1"],
+         ["w_rook"],
+         ["d1"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CASTLE_MOVES_LONG": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (CASTLE_IDX, 0b1000), (TURN_IDX, False)],
+        [["e8"],
+         ["b_king"],
+         ["c8"],
+         ["empty"],
+         [0b1000],
+         [0b0000],
+         [-1],
+         [-1],
+         ["a8"],
+         ["b_rook"],
+         ["d8"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CASTLE_MOVES_HAPPY": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook")],
+        [["e1"] * 2,
+         ["w_king"] * 2,
+         ["g1", "c1"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b1100] * 2,
+         [-1] * 2,
+         [-1] * 2,
+         ["h1", "a1"],
+         ["w_rook"] * 2,
+         ["f1", "d1"],
+         ["empty"] * 2],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CASTLE_MOVES_HAPPY": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"), (TURN_IDX, False)],
+        [["e8"] * 2,
+         ["b_king"] * 2,
+         ["g8", "c8"],
+         ["empty"] * 2,
+         [0b1111] * 2,
+         [0b0011] * 2,
+         [-1] * 2,
+         [-1] * 2,
+         ["h8", "a8"],
+         ["b_rook"] * 2,
+         ["f8", "d8"],
+         ["empty"] * 2],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CASTLE_MOVES_BLOCKED": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
+         ("f1", "w_bishop"), ("b1", "b_knight"),],
+        [],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CASTLE_MOVES_BLOCKED": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         ("f8", "w_bishop"), ("b8", "b_knight"), (TURN_IDX, False)],
+        [],
+        ("get_castle_moves", [])
+    )
 }
 
 
 # Using the move test dict keys as test parameters for easier debugging
 @pytest.mark.parametrize("test_key", MOVE_TEST_DICT.keys())
-def test_get_moves(empty_board: MainEngine, test_key):
+def test_get_moves(test_key):
     """After making modifications to empty board, this calls func_name of empty board with args
     and asserts the set of that return value is the same as the set of the expected_instructions"""
     # Unpack the test information
     mods, instruction_gen_args, (func, args) = MOVE_TEST_DICT[test_key]
 
     # Unpack the modifications to the state and apply them
-    for idx, val in mods:
-        if not isinstance(idx, int):
-            idx = SQUARE_IDX[idx]
-        if not isinstance(val, (int, bool)):
-            val = SQUARE_STATES.get(
-                val, EP_FILE.get(val, PLAYER_TURN.get(val, SQUARE_IDX.get(val, None))))
-        empty_board.state[idx] = val
+    board = build_board(mods)
 
     # Generate the instruction set
     if len(instruction_gen_args) == 4:
@@ -782,7 +910,7 @@ def test_get_moves(empty_board: MainEngine, test_key):
     expected_instructions = new_set
 
     # Check it against what the engine returns
-    actual_instructions = set(getattr(empty_board, func)(*args))
+    actual_instructions = set(getattr(board, func)(*args))
     print(f"{actual_instructions=}")
     print(f"{expected_instructions=}")
 
@@ -795,12 +923,7 @@ def test_get_moves(empty_board: MainEngine, test_key):
     assert actual_instructions == expected_instructions
 
 
-def test_short_castle():
-    # TODO:
-    pass
-
-
-def test_long_castle():
+def test_castle_blocked():
     # TODO:
     pass
 
@@ -831,6 +954,11 @@ def test_in_check_queen():
 
 
 def test_in_check_pawn():
+    # TODO:
+    pass
+
+
+def test_castle_threatened():
     # TODO:
     pass
 

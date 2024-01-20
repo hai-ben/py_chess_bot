@@ -434,3 +434,36 @@ class MainEngine:
         if self.state[-1]:
             return self.get_white_pawn_moves(pawn_idx)
         return self.get_black_pawn_moves(pawn_idx)
+
+    def get_castle_moves(self) -> list[tuple]:
+        """Gets all possible castling moves"""
+        moves = []
+        if self.state[66] == 0:
+            return moves
+
+        # Moving the king and or rook unsets the appropriate castle rights
+        # This means only, check, and tween tiles need to be checked
+        # If it's white's turn
+        if self.state[-1]:
+            if self.state[66] & 0b0001 and self.state[61] == 0 and self.state[62] == 0:
+                moves.append((60, 6, 62, 0,
+                              self.state[66], self.state[66] & 0b1100, self.state[67], -1,
+                              63, 4, 61, 0))
+            if self.state[66] & 0b0010 and self.state[57] == 0\
+                    and self.state[58] == 0 and self.state[59] == 0:
+                moves.append((60, 6, 58, 0,
+                              self.state[66], self.state[66] & 0b1100, self.state[67], -1,
+                              56, 4, 59, 0))
+            return moves
+
+        # Otherwise it's black's turn
+        if self.state[66] & 0b0100 and self.state[5] == 0 and self.state[6] == 0:
+            moves.append((4, 12, 6, 0,
+                          self.state[66], self.state[66] & 0b0011, self.state[67], -1,
+                          7, 10, 5, 0))
+        if self.state[66] & 0b1000 and self.state[3] == 0\
+                and self.state[2] == 0 and self.state[1] == 0:
+            moves.append((4, 12, 2, 0,
+                          self.state[66], self.state[66] & 0b0011, self.state[67], -1,
+                          0, 10, 3, 0))
+        return moves
