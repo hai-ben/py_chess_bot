@@ -867,7 +867,7 @@ MOVE_TEST_DICT = {
 
 # Using the move test dict keys as test parameters for easier debugging
 @pytest.mark.parametrize("test_key", MOVE_TEST_DICT.keys())
-def test_get_moves(test_key):
+def test_get_moves(test_key: str):
     """After making modifications to empty board, this calls func_name of empty board with args
     and asserts the set of that return value is the same as the set of the expected_instructions"""
     # Unpack the test information
@@ -921,6 +921,32 @@ def test_get_moves(test_key):
     for move in expected_instructions:
         assert move in actual_instructions
     assert actual_instructions == expected_instructions
+
+
+STATE_RETURN_DICT = {
+    "WHITE_CHECKED_BY_B_ROOK_H": (
+        [("d2", "w_king"), (W_KING_IDX, "d2"), ("f2", "b_rook")],
+        ("in_check", [True]),
+        True
+    ),
+    "WHITE_NOT_CHECKED_BY_W_ROOK_H": (
+        [("d2", "w_king"), (W_KING_IDX, "d2"), ("f2", "w_rook")],
+        ("in_check", [True]),
+        False
+    ),
+}
+
+
+# Using the board_state dict keys as test parameters for easier debugging
+@pytest.mark.parametrize("test_key", STATE_RETURN_DICT.keys())
+def test_state_return(test_key: str):
+    """Modifies the state of an empty board to according to mods and then
+    calls the given function with the arguments and checks it against the
+    specified expected state"""
+    mods, (func, args), expected_state = STATE_RETURN_DICT[test_key]
+    board = build_board(mods)
+    print(board)
+    assert getattr(board, func)(*args) == expected_state
 
 
 def test_in_check_rook():

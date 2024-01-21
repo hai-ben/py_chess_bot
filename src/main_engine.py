@@ -2,7 +2,7 @@
 from collections import deque
 from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
     QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
-    PAWN_DOUBLE_MOVES_BLACK
+    PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -467,3 +467,39 @@ class MainEngine:
                           self.state[66], self.state[66] & 0b0011, self.state[67], -1,
                           0, 10, 3, 0))
         return moves
+
+    def square_attacked_by_white(self, sqaure: int) -> bool:
+        """Checks wheteher the square is being attacked by a black piece"""
+        # Check if the square is being attacked by a black knight
+        for attacking_idx in KNIGHT_MOVES[sqaure]:
+            if self.state[attacking_idx] == 2:
+                return True
+
+        for attacking_direciton in BLOCKABLE_ATTACK_DICT_WHITE[sqaure]:
+            for attacking_idx, threats in attacking_direciton:
+                if self.state[attacking_idx] in threats:
+                    return True
+                if self.state[attacking_idx] > 0:
+                    break
+        return False
+
+    def square_attacked_by_black(self, sqaure: int) -> bool:
+        """Checks wheteher the square is being attacked by a black piece"""
+        # Check if the square is being attacked by a black knight
+        for attacking_idx in KNIGHT_MOVES[sqaure]:
+            if self.state[attacking_idx] == 8:
+                return True
+
+        for attacking_direciton in BLOCKABLE_ATTACK_DICT_BLACK[sqaure]:
+            for attacking_idx, threats in attacking_direciton:
+                if self.state[attacking_idx] in threats:
+                    return True
+                if self.state[attacking_idx] > 0:
+                    break
+        return False
+
+    def in_check(self, player_is_white: bool) -> bool:
+        "Checks the tile the player's king is on is threatened by a piece of the enemy"
+        if player_is_white:
+            return self.square_attacked_by_black(self.state[65])
+        return self.square_attacked_by_white(self.state[64])
