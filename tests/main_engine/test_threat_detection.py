@@ -15,12 +15,12 @@ STATE_RETURN_DICT = {
         False
     ),
     "BLACK_CHECKED_BY_W_ROOK_H": (
-        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a3", "w_rook")],
+        [("e3", "b_king"), (B_KING_IDX, "e3"), ("a3", "w_rook")],
         ("in_check", [False]),
         True
     ),
     "BLACK_NOT_CHECKED_BY_B_ROOK_H": (
-        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a3", "b_rook")],
+        [("e3", "b_king"), (B_KING_IDX, "e3"), ("a3", "b_rook")],
         ("in_check", [False]),
         False
     ),
@@ -35,12 +35,12 @@ STATE_RETURN_DICT = {
         False
     ),
     "BLACK_CHECKED_BY_W_ROOK_V": (
-        [("h8", "w_king"), (B_KING_IDX, "h8"), ("h1", "w_rook")],
+        [("h8", "b_king"), (B_KING_IDX, "h8"), ("h1", "w_rook")],
         ("in_check", [False]),
         True
     ),
     "BLACK_NOT_CHECKED_BY_B_ROOK_V": (
-        [("h8", "w_king"), (B_KING_IDX, "h8"), ("h1", "b_rook")],
+        [("h8", "b_king"), (B_KING_IDX, "h8"), ("h1", "b_rook")],
         ("in_check", [False]),
         False
     ),
@@ -55,21 +55,36 @@ STATE_RETURN_DICT = {
         False
     ),
     "BLACK_CHECKED_BY_W_BISHOP": (
-        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a7", "w_bishop")],
+        [("e3", "b_king"), (B_KING_IDX, "e3"), ("a7", "w_bishop")],
         ("in_check", [False]),
         True
     ),
     "BLACK_NOT_CHECKED_BY_B_BISHOP": (
-        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a7", "b_bishop")],
+        [("e3", "b_king"), (B_KING_IDX, "e3"), ("a7", "b_bishop")],
+        ("in_check", [False]),
+        False
+    ),
+    "WHITE_CHECKED_BY_B_KNIGHT": (
+        [("h1", "w_king"), (W_KING_IDX, "h1"), ("g3", "b_knight")],
+        ("in_check", [True]),
+        True
+    ),
+    "WHITE_NOT_CHECKED_BY_W_KNIGHT": (
+        [("h1", "w_king"), (W_KING_IDX, "h1"), ("f2", "w_knight")],
+        ("in_check", [True]),
+        False
+    ),
+    "BLACK_CHECKED_BY_W_KNIGHT": (
+        [("c7", "b_king"), (B_KING_IDX, "c7"), ("a8", "w_knight")],
+        ("in_check", [False]),
+        True
+    ),
+    "BLACK_NOT_CHECKED_BY_B_KNIGHT": (
+        [("e3", "b_king"), (B_KING_IDX, "e3"), ("a6", "b_knight")],
         ("in_check", [False]),
         False
     ),
 }
-
-
-def test_in_check_knight():
-    # TODO:
-    pass
 
 
 def test_in_check_king():
