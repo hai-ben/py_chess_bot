@@ -685,13 +685,88 @@ MOVE_TEST_DICT = {
          ("f8", "w_bishop"), ("b8", "b_knight"), (TURN_IDX, False)],
         [],
         ("get_castle_moves", [])
-    )
+    ),
+    "WHITE_CANT_CASTLE_IN_CHECK": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (W_KING_IDX, "e1"),
+         ("e8", "b_queen")],
+        [],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_SHORT": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), 
+         (W_KING_IDX, "e1"), ("f8", "b_rook")],
+        [["e1"],
+         ["w_king"],
+         ["c1"],
+         ["empty"],
+         [0b1111],
+         [0b1100],
+         [-1],
+         [-1],
+         ["a1"],
+         ["w_rook"],
+         ["d1"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_LONG": (
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), 
+         (W_KING_IDX, "e1"), ("c2", "b_pawn")],
+        [["e1"],
+         ["w_king"],
+         ["g1"],
+         ["empty"],
+         [0b1111],
+         [0b1100],
+         [-1],
+         [-1],
+         ["h1"],
+         ["w_rook"],
+         ["f1"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CANT_CASTLE_IN_CHECK": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (B_KING_IDX, "e8"), ("h5", "w_bishop"), (TURN_IDX, False)],
+        [],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CANT_CASTLE_ACROSS_THREATENED_SQUARES_SHORT": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (B_KING_IDX, "e8"), ("g1", "w_queen"), (TURN_IDX, False)],
+        [["e8"],
+         ["b_king"],
+         ["c8"],
+         ["empty"],
+         [0b1111],
+         [0b0011],
+         [-1],
+         [-1],
+         ["a8"],
+         ["b_rook"],
+         ["d8"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
+    "BLACK_CANT_CASTLE_ACROSS_THREATENED_SQUARES_LONG": (
+        [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
+         (B_KING_IDX, "e8"), ("c7", "w_pawn"), (TURN_IDX, False)],
+        [["e8"],
+         ["b_king"],
+         ["g8"],
+         ["empty"],
+         [0b1111],
+         [0b0011],
+         [-1],
+         [-1],
+         ["h8"],
+         ["b_rook"],
+         ["f8"],
+         ["empty"]],
+        ("get_castle_moves", [])
+    ),
 }
-
-
-def test_castle_threatened():
-    # TODO:
-    pass
 
 
 # Using the move test dict keys as test parameters for easier debugging

@@ -262,7 +262,6 @@ class MainEngine:
             elif rook_idx == 56:  # White long castle
                 additional_state_info += (self.state[66], self.state[66] & 0b1101)
         else:
-            print("Blacks turn", rook_idx)
             if rook_idx == 0:  # Black long castle
                 additional_state_info += (self.state[66], self.state[66] & 0b0111)
             elif rook_idx == 7:  # Black short castle
@@ -445,24 +444,28 @@ class MainEngine:
         # This means only, check, and tween tiles need to be checked
         # If it's white's turn
         if self.state[-1]:
-            if self.state[66] & 0b0001 and self.state[61] == 0 and self.state[62] == 0:
+            if self.in_check(True):
+                return moves
+
+            if self.state[66] & 0b0001 and self.squares_safe_from_and_empty((61, 62), False):
                 moves.append((60, 6, 62, 0,
                               self.state[66], self.state[66] & 0b1100, self.state[67], -1,
                               63, 4, 61, 0))
-            if self.state[66] & 0b0010 and self.state[57] == 0\
-                    and self.state[58] == 0 and self.state[59] == 0:
+            if self.state[66] & 0b0010 and self.squares_safe_from_and_empty((57, 58, 59), False):
                 moves.append((60, 6, 58, 0,
                               self.state[66], self.state[66] & 0b1100, self.state[67], -1,
                               56, 4, 59, 0))
             return moves
 
         # Otherwise it's black's turn
-        if self.state[66] & 0b0100 and self.state[5] == 0 and self.state[6] == 0:
+        if self.in_check(False):
+            return moves
+
+        if self.state[66] & 0b0100 and self.squares_safe_from_and_empty((5, 6), True):
             moves.append((4, 12, 6, 0,
                           self.state[66], self.state[66] & 0b0011, self.state[67], -1,
                           7, 10, 5, 0))
-        if self.state[66] & 0b1000 and self.state[3] == 0\
-                and self.state[2] == 0 and self.state[1] == 0:
+        if self.state[66] & 0b1000 and self.squares_safe_from_and_empty((3, 2, 1), True):
             moves.append((4, 12, 2, 0,
                           self.state[66], self.state[66] & 0b0011, self.state[67], -1,
                           0, 10, 3, 0))
@@ -497,6 +500,21 @@ class MainEngine:
                 if self.state[attacking_idx] > 0:
                     break
         return False
+
+    def square_attacked_by_player(self, square: int, player_is_white: bool) -> bool:
+        """Returns true if the given square is attacked by the given player"""
+        if player_is_white:
+            return self.square_attacked_by_white(square)
+        return self.square_attacked_by_black(square)
+
+    def squares_safe_from_and_empty(self, squares: tuple[int], player_is_white: bool) -> bool:
+        """Returns True if the given squares are empty and are safe from player"""
+        for square in squares:
+            if self.state[square] > 0:
+                return False
+            if self.square_attacked_by_player(square, player_is_white):
+                return False
+        return True
 
     def in_check(self, player_is_white: bool) -> bool:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
