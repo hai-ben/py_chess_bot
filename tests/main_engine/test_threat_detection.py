@@ -1,6 +1,5 @@
 import pytest
-from src.resources.data_translators import SQUARE_IDX, B_KING_IDX, W_KING_IDX, CASTLE_IDX, EP_IDX,\
-    TURN_IDX, SQUARE_STATES, CASTLE_STATES, EP_FILE
+from src.resources.data_translators import B_KING_IDX, W_KING_IDX
 
 
 STATE_RETURN_DICT = {
@@ -104,15 +103,30 @@ STATE_RETURN_DICT = {
         ("in_check", [False]),
         False
     ),
+    "WHITE_CHECKED_BY_B_PAWN": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("b7", "b_pawn")],
+        ("in_check", [True]),
+        True
+    ),
+    "WHITE_NOT_CHECKED_BY_W_PAWN": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("d5", "w_pawn")],
+        ("in_check", [True]),
+        False
+    ),
+    "BLACK_CHECKED_BY_W_PAWN": (
+        [("b4", "b_king"), (B_KING_IDX, "b4"), ("c3", "w_pawn")],
+        ("in_check", [False]),
+        True
+    ),
+    "BLACK_NOT_CHECKED_BY_B_PAWN": (
+        [("b4", "b_king"), (B_KING_IDX, "b4"), ("a5", "b_pawn")],
+        ("in_check", [False]),
+        False
+    ),
 }
 
 
 def test_in_check_king():
-    # TODO:
-    pass
-
-
-def test_in_check_pawn():
     # TODO:
     pass
 
