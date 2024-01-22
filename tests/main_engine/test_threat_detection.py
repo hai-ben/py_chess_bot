@@ -1,3 +1,4 @@
+"""A suite of tests that makes sure different board states are registered as checks"""
 import pytest
 from src.resources.data_translators import B_KING_IDX, W_KING_IDX
 
@@ -123,12 +124,17 @@ STATE_RETURN_DICT = {
         ("in_check", [False]),
         False
     ),
+    "WHITE_CHECKED_BY_B_KING": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("d7", "b_king"), (B_KING_IDX, "d7")],
+        ("in_check", [True]),
+        True
+    ),
+    "BLACK_CHECKED_BY_W_KING": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("d7", "b_king"), (B_KING_IDX, "d7")],
+        ("in_check", [False]),
+        True
+    ),
 }
-
-
-def test_in_check_king():
-    # TODO:
-    pass
 
 
 # Using the board_state dict keys as test parameters for easier debugging
