@@ -3,8 +3,6 @@ from collections import deque
 import pytest
 from tests.prototyping.pytest_resources import BASE_STATE_ASCII, START_STATE_ASCII
 from src.main_engine import MainEngine
-from src.resources.data_translators import SQUARE_IDX, B_KING_IDX, W_KING_IDX, CASTLE_IDX, EP_IDX,\
-    TURN_IDX, SQUARE_STATES, CASTLE_STATES, EP_FILE
 
 
 STARTING_LIST_STATE =\
@@ -154,55 +152,16 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-def test_pin():
-    # TODO:
-    pass
-
-
-def test_hash_moves():
-    # TODO:
-    pass
-
-
-def test_hash_take():
-    # TODO:
-    pass
-
-
-def test_hash_circular():
-    # TODO:
-    pass
-
-
-def test_hash_castling():
-    # TODO:
-    pass
-
-
-def test_hash_enpassant():
-    # TODO:
-    pass
-
-
 def test_sufficient_material():
     # TODO:
     pass
 
 
-def test_get_game_notation():
+def test_get_notation_from_state():
     # TODO:
     pass
 
 
 def test_play_game_from_notation():
-    # TODO
-    pass
-
-
-def test_hash_pawn_promote():
-    pass
-
-
-def test_hash_en_passant_take():
     # TODO
     pass
