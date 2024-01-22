@@ -44,12 +44,27 @@ STATE_RETURN_DICT = {
         ("in_check", [False]),
         False
     ),
+    "WHITE_CHECKED_BY_B_BISHOP": (
+        [("d2", "w_king"), (W_KING_IDX, "d2"), ("f4", "b_bishop")],
+        ("in_check", [True]),
+        True
+    ),
+    "WHITE_NOT_CHECKED_BY_W_BISHOP": (
+        [("d2", "w_king"), (W_KING_IDX, "d2"), ("f4", "w_bishop")],
+        ("in_check", [True]),
+        False
+    ),
+    "BLACK_CHECKED_BY_W_BISHOP": (
+        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a7", "w_bishop")],
+        ("in_check", [False]),
+        True
+    ),
+    "BLACK_NOT_CHECKED_BY_B_BISHOP": (
+        [("e3", "w_king"), (B_KING_IDX, "e3"), ("a7", "b_bishop")],
+        ("in_check", [False]),
+        False
+    ),
 }
-
-
-def test_in_check_bishop():
-    # TODO:
-    pass
 
 
 def test_in_check_knight():

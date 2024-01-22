@@ -693,7 +693,7 @@ MOVE_TEST_DICT = {
         ("get_castle_moves", [])
     ),
     "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_SHORT": (
-        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), 
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
          (W_KING_IDX, "e1"), ("f8", "b_rook")],
         [["e1"],
          ["w_king"],
@@ -710,7 +710,7 @@ MOVE_TEST_DICT = {
         ("get_castle_moves", [])
     ),
     "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_LONG": (
-        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), 
+        [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
          (W_KING_IDX, "e1"), ("c2", "b_pawn")],
         [["e1"],
          ["w_king"],
