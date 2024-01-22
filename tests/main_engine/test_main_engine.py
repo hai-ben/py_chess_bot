@@ -152,9 +152,35 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-def test_sufficient_material():
-    # TODO:
-    pass
+SUFFICIENT_MATERIAL_TESTS = {
+    "LONE_KING": ([], False),
+    "PAWN": ([("e4", "w_pawn")], True),
+    "ROOK": ([("e4", "b_rook")], True),
+    "QUEEN": ([("e4", "b_queen")], True),
+    "SINGLE_KNIGHT": ([("e4", "w_knight"), ("e5", "b_knight")], False),
+    "DOUBLE_KNIGHT": ([("e4", "w_knight"), ("e5", "w_knight")], False),
+    "SINGLE_BISHOP": ([("e4", "w_bishop"), ("e5", "b_bishop")], False),
+    "DOUBLE_BISHOP_W": ([("e4", "w_bishop"), ("e5", "w_bishop")], True),
+    "DOUBLE_BISHOP_B": ([("e4", "b_bishop"), ("e5", "b_bishop")], True),
+    "KNIGHT_BISHOP_W": ([("e4", "w_bishop"), ("e5", "w_knight")], True),
+    "KNIGHT_BISHOP_B": ([("e4", "b_bishop"), ("e5", "b_knight")], True),
+    "2_W_KNIGHT_VS_BISHOP": ([("e4", "w_knight"), ("e5", "w_knight"), ("e6", "b_knight")], True),
+    "2_W_KNIGHT_VS_KNIGHT": ([("e4", "w_knight"), ("e5", "w_knight"), ("e6", "b_bishop")], True),
+    "2_B_KNIGHT_VS_BISHOP": ([("e4", "b_knight"), ("e5", "b_knight"), ("e6", "w_knight")], True),
+    "2_B_KNIGHT_VS_KNIGHT": ([("e4", "b_knight"), ("e5", "b_knight"), ("e6", "w_bishop")], True),
+    "2_V_2_KNIGHTS": ([("e4", "b_knight"), ("e5", "b_knight"),
+                       ("e6", "w_knight"), ("e7", "w_knight")], True),
+    "3_KNIGHTS_W": ([("e4", "w_knight"), ("e5", "w_knight"), ("e6", "w_knight")], True),
+    "3_KNIGHTS_B": ([("e4", "b_knight"), ("e5", "b_knight"), ("e6", "b_knight")], True),
+}
+
+
+@pytest.mark.parametrize("test_key", SUFFICIENT_MATERIAL_TESTS.keys())
+def test_sufficient_material(board_state_generator, test_key):
+    """Given the modifications to the board given in the SUFFICIENT_MATERIAL_TESTS
+    dictionary checks if the state is correct"""
+    mods, expected_return = SUFFICIENT_MATERIAL_TESTS[test_key]
+    assert board_state_generator(mods).sufficient_material() is expected_return
 
 
 def test_get_notation_from_state():

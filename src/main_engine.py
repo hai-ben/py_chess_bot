@@ -1,5 +1,5 @@
 """Chess engine uses a list for a state and a graph to track relations"""
-from collections import deque
+from collections import deque, defaultdict
 from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
     QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
     PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK
@@ -13,7 +13,7 @@ STARTING_STATE =\
     + [0] * 8 + [0] * 8 + [0] * 8 + [0] * 8\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
     + [4] + [60] + [0b1111] + [-1] + [True]
-
+SUFFICIENT_MATERIAL = {1, 4, 5, 7, 10, 11}
 
 class MainEngine:
     """See data_structures.md for detailed data structure information"""
@@ -521,3 +521,34 @@ class MainEngine:
         if player_is_white:
             return self.square_attacked_by_black(self.state[65])
         return self.square_attacked_by_white(self.state[64])
+
+    def sufficient_material(self) -> bool:
+        """Checks if there is sufficient mating material"""
+        # pylint: disable=too-many-return-statements
+        material = defaultdict(int)
+        for state in self:
+            # If the piece on this tile by itself is sufficient material
+            if state in SUFFICIENT_MATERIAL:
+                return True
+            material[state] += 1
+
+            # If a player has two bishops
+            if material[3] == 2 or material[9] == 2:
+                return True
+
+            # If a player has at least one bishop and at least one knight
+            if (material[3] >= 1 and material[2] >= 1) or (material[9] >= 1 and material[8] >= 1):
+                return True
+
+            # If white has two knights and black has at least one knight or bishop
+            if material[2] >= 2 and (material[8] >= 1 or material[9] >= 1):
+                return True
+
+            # If black has two knights and white has at least one knight or bishop
+            if material[8] >= 2 and (material[2] >= 1 or material[3] >= 1):
+                return True
+
+            # If a player has more than two knights (strange promotion choices)
+            if material[2] >= 3 or material[8] >= 3:
+                return True
+        return False
