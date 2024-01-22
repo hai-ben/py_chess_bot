@@ -522,6 +522,51 @@ class MainEngine:
             return self.square_attacked_by_black(self.state[65])
         return self.square_attacked_by_white(self.state[64])
 
+    def get_white_moves(self) -> list[tuple]:
+        """Gets all the moves for white in the current position"""
+        moves = []
+        for idx, state in enumerate(self):
+            if state == 1:
+                moves.extend(self.get_pawn_moves(idx))
+            elif state == 2:
+                moves.extend(self.get_knight_moves(idx))
+            elif state == 3:
+                moves.extend(self.get_bishop_moves(idx))
+            elif state == 4:
+                moves.extend(self.get_rook_moves(idx))
+            elif state == 5:
+                moves.extend(self.get_queen_moves(idx))
+        return moves
+
+    def get_black_moves(self) -> list[tuple]:
+        """Gets all the moves for black in the current position"""
+        moves = []
+        for idx, state in enumerate(self):
+            if state == 7:
+                moves.extend(self.get_pawn_moves(idx))
+            elif state == 8:
+                moves.extend(self.get_knight_moves(idx))
+            elif state == 9:
+                moves.extend(self.get_bishop_moves(idx))
+            elif state == 10:
+                moves.extend(self.get_rook_moves(idx))
+            elif state == 11:
+                moves.extend(self.get_queen_moves(idx))
+        return moves
+
+    def get_all_moves(self) -> list[tuple]:
+        """Gets all the moves for the given state of the board"""
+        moves = []
+        moves.extend(self.get_castle_moves())
+        moves.extend(self.get_king_moves())
+
+        # If it's white's turn
+        if self.state[-1]:
+            moves.extend(self.get_white_moves())
+        else:
+            moves.extend(self.get_black_moves())
+        return moves
+
     def sufficient_material(self) -> bool:
         """Checks if there is sufficient mating material"""
         # pylint: disable=too-many-return-statements

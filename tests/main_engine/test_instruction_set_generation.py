@@ -3,6 +3,7 @@ import pytest
 from instruction_set_cases.basic_cases import BASIC_MOVE_TESTS
 from instruction_set_cases.advanced_cases import ADVANCED_MOVE_TESTS
 from src.resources.data_translators import SQUARE_IDX, SQUARE_STATES
+from src.main_engine import MainEngine
 
 MOVE_TEST_DICT = BASIC_MOVE_TESTS | ADVANCED_MOVE_TESTS
 
@@ -15,7 +16,10 @@ def test_get_moves(board_state_generator, test_key: str):
     mods, instruction_gen_args, (func, args) = MOVE_TEST_DICT[test_key]
 
     # Unpack the modifications to the state and apply them
-    board = board_state_generator(mods)
+    if mods:
+        board = board_state_generator(mods)
+    else:
+        board = MainEngine()
 
     # Generate the instruction set
     if len(instruction_gen_args) == 4:
