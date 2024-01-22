@@ -84,15 +84,30 @@ STATE_RETURN_DICT = {
         ("in_check", [False]),
         False
     ),
+    "WHITE_CHECKED_BY_B_QUEEN": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("e4", "b_queen")],
+        ("in_check", [True]),
+        True
+    ),
+    "WHITE_NOT_CHECKED_BY_W_QUEEN": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("e4", "w_queen")],
+        ("in_check", [True]),
+        False
+    ),
+    "BLACK_CHECKED_BY_W_QUEEN": (
+        [("b4", "b_king"), (B_KING_IDX, "b4"), ("b1", "w_queen")],
+        ("in_check", [False]),
+        True
+    ),
+    "BLACK_NOT_CHECKED_BY_B_QUEEN": (
+        [("b4", "b_king"), (B_KING_IDX, "b4"), ("b1", "b_queen")],
+        ("in_check", [False]),
+        False
+    ),
 }
 
 
 def test_in_check_king():
-    # TODO:
-    pass
-
-
-def test_in_check_queen():
     # TODO:
     pass
 
