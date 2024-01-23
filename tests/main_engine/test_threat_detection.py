@@ -1,6 +1,6 @@
 """A suite of tests that makes sure different board states are registered as checks"""
 import pytest
-from src.resources.data_translators import B_KING_IDX, W_KING_IDX
+from src.resources.data_translators import B_KING_IDX, W_KING_IDX, TURN_IDX
 
 
 STATE_RETURN_DICT = {
@@ -131,6 +131,16 @@ STATE_RETURN_DICT = {
     ),
     "BLACK_CHECKED_BY_W_KING": (
         [("c6", "w_king"), (W_KING_IDX, "c6"), ("d7", "b_king"), (B_KING_IDX, "d7")],
+        ("in_check", [False]),
+        True
+    ),
+    "IN_CHECK_OFF_TURN_W": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("d6", "b_rook"), (TURN_IDX, False)],
+        ("in_check", [True]),
+        True
+    ),
+    "IN_CHECK_OFF_TURN_B": (
+        [("c6", "b_king"), (B_KING_IDX, "c6"), ("d7", "w_bishop"), (TURN_IDX, True)],
         ("in_check", [False]),
         True
     ),

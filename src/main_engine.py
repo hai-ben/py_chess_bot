@@ -128,8 +128,13 @@ class MainEngine:
 
     def reverse_last_instruction(self):
         """Reverses the last instruction on the stack"""
-        # Put the piece back on the start_idx
         instruction_set = self.state_stack.pop()
+
+        # Update the king position if it changed
+        if self.state[64 + (not self.state[-1])] == instruction_set[2]:
+            self.state[64 + (not self.state[-1])] = instruction_set[0]
+
+        # Put the piece back on the start_idx
         self.state[instruction_set[0]] = instruction_set[1]
 
         # Restore the to_idx square
@@ -151,31 +156,52 @@ class MainEngine:
         # Update the hash
         self.hash = self.hash_stack.pop()
 
+    def get_white_king_moves(self) -> list[tuple]:
+        """Gets all the possible king move instructions (not castling) for white"""
+        king_idx = self.state[65]
+        # If white has any castling rights remove them
+        if self.state[66] & 0b0011:
+            castle_to_state = self.state[66] & 0b1100
+            return [
+                (king_idx, self.state[king_idx],
+                    target_idx, self.state[target_idx],
+                    self.state[66], castle_to_state, self.state[67], -1)
+                for target_idx in KING_MOVES[king_idx]
+                if self.state[target_idx] == 0 or self.state[target_idx] > 6
+            ]
+        # Otherwise don't include them in the return statement
+        return [
+            (king_idx, self.state[king_idx], target_idx, self.state[target_idx])
+                for target_idx in KING_MOVES[king_idx]
+                    if self.state[target_idx] == 0 or self.state[target_idx] > 6
+        ]
+
+    def get_black_king_moves(self) -> list[tuple]:
+        """Gets all the possible king move instructions (not castling) for black"""
+        king_idx = self.state[64]
+        # If black has any castling rights remove them
+        if self.state[66] & 0b1100:
+            castle_to_state = self.state[66] & 0b0011
+            return [
+                (king_idx, self.state[king_idx],
+                target_idx, self.state[target_idx],
+                self.state[66], castle_to_state, self.state[67], -1)
+                for target_idx in KING_MOVES[king_idx]
+                if self.state[target_idx] < 7
+            ]
+        # Otherwise don't include them in the return statement
+        return [
+            (king_idx, self.state[king_idx], target_idx, self.state[target_idx],)
+            for target_idx in KING_MOVES[king_idx] if self.state[target_idx] < 7
+        ]
+
     def get_king_moves(self) -> list[tuple]:
         """Gets all the possible king move instructions (not castling) for the active player"""
         # These statements can be merged but it requires additional variable assignment
         # If it's white's turn
         if self.state[-1]:
-            king_idx = self.state[65]
-            castle_to_state = self.state[66] & 0b1100
-            return [
-                (king_idx, self.state[king_idx],
-                 target_idx, self.state[target_idx],
-                 self.state[66], castle_to_state, self.state[67], -1)
-                for target_idx in KING_MOVES[king_idx]
-                if self.state[target_idx] == 0 or self.state[target_idx] > 6
-            ]
-
-        # Otherwise get the moves for black's king
-        king_idx = self.state[64]
-        castle_to_state = self.state[66] & 0b0011
-        return [
-            (king_idx, self.state[king_idx],
-             target_idx, self.state[target_idx],
-             self.state[66], castle_to_state, self.state[67], -1)
-            for target_idx in KING_MOVES[king_idx]
-            if self.state[target_idx] < 7
-        ]
+            return self.get_white_king_moves()
+        return self.get_black_king_moves()
 
     def get_knight_moves(self, knight_idx: int) -> list[tuple]:
         """Gets all the possible knight move instructions for the active player
@@ -516,7 +542,7 @@ class MainEngine:
                 return False
         return True
 
-    def in_check(self, player_is_white: bool) -> bool:
+    def in_check(self, player_is_white: bool=None) -> bool:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
         if player_is_white:
             return self.square_attacked_by_black(self.state[65])
@@ -554,6 +580,22 @@ class MainEngine:
                 moves.extend(self.get_queen_moves(idx))
         return moves
 
+    def filter_illegal_moves(self, moves: list[tuple]) -> list[tuple]:
+        """Tries all the instructions in moves and returns the ones that result
+        in a legal state"""
+        legal_moves = []
+        for move in moves:
+            # print(f"Executing: {move}")
+            self.execute_instructions(move)
+            # print("The new state is:")
+            # print(self)
+            # print(f"White king_idx = {self.state[65]}")
+            # print(f"This resulted in {'white' if not self.state[-1] else 'black'} having the check state: {self.in_check(not self.state[-1])}")
+            if not self.in_check(not self.state[-1]):
+                legal_moves.append(move)
+            self.reverse_last_instruction()
+        return legal_moves
+
     def get_all_moves(self) -> list[tuple]:
         """Gets all the moves for the given state of the board"""
         moves = []
@@ -565,7 +607,7 @@ class MainEngine:
             moves.extend(self.get_white_moves())
         else:
             moves.extend(self.get_black_moves())
-        return moves
+        return self.filter_illegal_moves(moves)
 
     def sufficient_material(self) -> bool:
         """Checks if there is sufficient mating material"""

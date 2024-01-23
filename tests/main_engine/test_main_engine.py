@@ -152,7 +152,20 @@ def test_king_idx_updated_with_instructions(engine: MainEngine):
     assert engine.state[65] == 35  # White King
 
 
-SUFFICIENT_MATERIAL_TESTS = {
+def test_king_idx_updated_when_instructions_reversed(engine: MainEngine):
+    """Ensures that the king indicies are updated when king move instructions are undone"""
+    # White king movement
+    instruction_set_1 = (60, engine.state[60], 35, engine.state[35])
+    instruction_set_2 = (4, engine.state[4], 20, engine.state[20])
+    engine.execute_instructions(instruction_set_1)
+    engine.execute_instructions(instruction_set_2)
+    engine.reverse_last_instruction()
+    assert engine.state[64] == 4   # Black King
+    engine.reverse_last_instruction()
+    assert engine.state[65] == 60  # White King
+
+
+SUFFICIENT_MATERIAL_CASES = {
     "LONE_KING": ([], False),
     "PAWN": ([("e4", "w_pawn")], True),
     "ROOK": ([("e4", "b_rook")], True),
@@ -175,11 +188,11 @@ SUFFICIENT_MATERIAL_TESTS = {
 }
 
 
-@pytest.mark.parametrize("test_key", SUFFICIENT_MATERIAL_TESTS.keys())
+@pytest.mark.parametrize("test_key", SUFFICIENT_MATERIAL_CASES.keys())
 def test_sufficient_material(board_state_generator, test_key):
     """Given the modifications to the board given in the SUFFICIENT_MATERIAL_TESTS
     dictionary checks if the state is correct"""
-    mods, expected_return = SUFFICIENT_MATERIAL_TESTS[test_key]
+    mods, expected_return = SUFFICIENT_MATERIAL_CASES[test_key]
     assert board_state_generator(mods).sufficient_material() is expected_return
 
 
