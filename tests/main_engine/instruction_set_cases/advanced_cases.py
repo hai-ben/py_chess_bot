@@ -1,6 +1,5 @@
 """Advanced test cases for the instruction set generator"""
-from src.resources.data_translators import SQUARE_IDX, B_KING_IDX, W_KING_IDX, CASTLE_IDX, EP_IDX,\
-    TURN_IDX, CASTLE_STATES, EP_FILE
+from src.resources.data_translators import B_KING_IDX, W_KING_IDX, CASTLE_IDX, TURN_IDX
 
 
 ADVANCED_MOVE_TESTS = {

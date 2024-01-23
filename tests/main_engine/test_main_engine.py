@@ -2,6 +2,7 @@
 from collections import deque
 import pytest
 from tests.prototyping.pytest_resources import BASE_STATE_ASCII, START_STATE_ASCII
+from src.resources.data_translators import SQUARE_IDX, SQUARE_STATES
 from src.main_engine import MainEngine
 
 
@@ -163,6 +164,23 @@ def test_king_idx_updated_when_instructions_reversed(engine: MainEngine):
     assert engine.state[64] == 4   # Black King
     engine.reverse_last_instruction()
     assert engine.state[65] == 60  # White King
+
+
+def test_hash_transpose(engine: MainEngine):
+    """Tests that the hash is the same for two board states regardless of journey """
+    start_hash = hash(engine)
+    print(f"State to start is:\n{engine}\n")
+    # Shuffle the knights back and forth
+    engine.execute_instructions((SQUARE_IDX["g1"], SQUARE_STATES["w_knight"],
+                                 SQUARE_IDX["h3"], SQUARE_STATES["empty"]))
+    engine.execute_instructions((SQUARE_IDX["g8"], SQUARE_STATES["b_knight"],
+                                 SQUARE_IDX["h6"], SQUARE_STATES["empty"]))
+    engine.execute_instructions((SQUARE_IDX["h3"], SQUARE_STATES["w_knight"],
+                                 SQUARE_IDX["g1"], SQUARE_STATES["empty"]))
+    engine.execute_instructions((SQUARE_IDX["h6"], SQUARE_STATES["b_knight"],
+                                 SQUARE_IDX["g8"], SQUARE_STATES["empty"]))
+    print(f"State to finish is:\n{engine}")
+    assert start_hash == hash(engine)
 
 
 SUFFICIENT_MATERIAL_CASES = {

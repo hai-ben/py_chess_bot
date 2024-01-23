@@ -585,12 +585,7 @@ class MainEngine:
         in a legal state"""
         legal_moves = []
         for move in moves:
-            # print(f"Executing: {move}")
             self.execute_instructions(move)
-            # print("The new state is:")
-            # print(self)
-            # print(f"White king_idx = {self.state[65]}")
-            # print(f"This resulted in {'white' if not self.state[-1] else 'black'} having the check state: {self.in_check(not self.state[-1])}")
             if not self.in_check(not self.state[-1]):
                 legal_moves.append(move)
             self.reverse_last_instruction()
