@@ -2,7 +2,8 @@
 from collections import deque, defaultdict
 from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
     QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
-    PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK
+    PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK,\
+    ADJACENT_TILES
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -470,7 +471,7 @@ class MainEngine:
         # This means only, check, and tween tiles need to be checked
         # If it's white's turn
         if self.state[-1]:
-            if self.in_check(True):
+            if self.squares_attacking_king(True):
                 return moves
 
             if self.state[66] & 0b0001 and self._squares_safe_from_and_empty((61, 62), False):
@@ -484,7 +485,7 @@ class MainEngine:
             return moves
 
         # Otherwise it's black's turn
-        if self.in_check(False):
+        if self.squares_attacking_king(False):
             return moves
 
         if self.state[66] & 0b0100 and self._squares_safe_from_and_empty((5, 6), True):
@@ -530,7 +531,8 @@ class MainEngine:
         return attacking_indicies
 
     def _square_attacked_by_player(self, square: int, player_is_white: bool) -> bool:
-        """Returns true if the given square is attacked by the given player"""
+        """Returns all the squares where a piece controlled by the given player
+         is attacking the given square."""
         if player_is_white:
             return self._square_attacked_by_white(square)
         return self._square_attacked_by_black(square)
@@ -544,7 +546,7 @@ class MainEngine:
                 return False
         return True
 
-    def in_check(self, player_is_white: bool=None) -> list[int]:
+    def squares_attacking_king(self, player_is_white: bool=None) -> list[int]:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
         if player_is_white:
             return self._square_attacked_by_black(self.state[65])
@@ -586,9 +588,21 @@ class MainEngine:
         """Tries all the instructions in moves and returns the ones that result
         in a legal state"""
         legal_moves = []
+
+        squares_attacking_king = self.squares_attacking_king()
+        if len(squares_attacking_king) >= 2:
+            for move in moves:
+                if move[1] != (6 if self.state[-1] else 12):
+                    continue
+
+                if not self._square_attacked_by_player(move[2], not self.state[-1]):
+                    legal_moves.append(move)
+
+            return legal_moves
+
         for move in moves:
             self.execute_instructions(move)
-            if not self.in_check(not self.state[-1]):
+            if not self.squares_attacking_king(not self.state[-1]):
                 legal_moves.append(move)
             self.reverse_last_instruction()
         return legal_moves
