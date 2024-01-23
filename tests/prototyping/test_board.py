@@ -2,10 +2,11 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=attribute-defined-outside-init
 import pytest
+from pytest_resources import BASE_STATE, OPENING_MOVES_WHITE,\
+    OPENING_MOVES_BLACK, ITER_BASE_STATE, START_STATE_ASCII
 from src.prototyping.chess_pieces import Pawn, Rook, King
 from src.prototyping.board import ChessBoard
-from resources import BASE_STATE, OPENING_MOVES_WHITE, OPENING_MOVES_BLACK,\
-                      ITER_BASE_STATE, START_STATE
+
 
 @pytest.fixture(name="base_board")
 def fixture_base_board():
@@ -54,7 +55,7 @@ def test_opening_moves(base_board):
 
 
 def test_print(base_board):
-    assert str(base_board) == START_STATE
+    assert str(base_board) == START_STATE_ASCII
 
 
 def test_pawn_attack(base_board):

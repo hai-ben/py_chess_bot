@@ -5,12 +5,14 @@ from src.prototyping.small_board import SmallBoard
 
 class SmallBoardAdapter:
     """A way to perform a random walk down a board state using SmallBoard"""
-    def __init__(self) -> None:
+    def __init__(self, rand_seed:int = 0) -> None:
         self.current_state = SmallBoard()
         self.current_state.reset()
         self.current_moves = self.current_state.get_all_moves()
         self.draw_counter = 100
         self.visited_state = Counter()
+        # Control for variance with seeds
+        random.seed(rand_seed)
 
     def play_random_move(self):
         """ Plays random moves on a board itself until there are no more

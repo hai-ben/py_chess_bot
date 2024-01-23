@@ -1,3 +1,4 @@
+# pylint: disable-all
 import random
 from copy import deepcopy
 from src.prototyping.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King

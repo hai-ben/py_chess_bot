@@ -2,9 +2,9 @@
 from typing import Self
 from collections import defaultdict
 from src.prototyping.chess_pieces import Pawn, Bishop, Knight, Rook, Queen, King
-from src.resources.move_set_dict import KNIGHT_MOVE_DICT, ROOK_MOVE_DICT, BISHOP_MOVE_DICT,\
-    QUEEN_MOVE_DICT, KING_MOVE_DICT, BLACK_PAWN_ATTACK_DICT, WHITE_PAWN_ATTACK_DICT,\
-    BLACK_PAWN_MOVE_DICT, WHITE_PAWN_MOVE_DICT, SKIPABLE_THREAT_DICT
+from src.prototyping.resources.move_set_dict import KNIGHT_MOVE_DICT, ROOK_MOVE_DICT,\
+    BISHOP_MOVE_DICT, QUEEN_MOVE_DICT, KING_MOVE_DICT, BLACK_PAWN_ATTACK_DICT,\
+    WHITE_PAWN_ATTACK_DICT, BLACK_PAWN_MOVE_DICT, WHITE_PAWN_MOVE_DICT, SKIPABLE_THREAT_DICT
 
 FILE_IDX = {"a": 7, "b": 6, "c": 5, "d": 4, "e": 3, "f": 2, "g": 1, "h": 0}
 RANK_IDX = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7}

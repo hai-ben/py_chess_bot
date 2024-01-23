@@ -1,4 +1,4 @@
-## Roadmap ##
+## Roadmap
 
 This is just a place for me to mess around with python, ML, and code performance evaluation right now the rough road map is:
 - Get a decent engine with stock python. No numpy, I want to really see what I can push out of stock python:
@@ -8,7 +8,7 @@ This is just a place for me to mess around with python, ML, and code performance
         - **DONE** What the list represents
         - **DONE** How the graph will be tracked
     - **DONE** Skeleton suite of unit tests from small_board and board tests
-    - Fill-in test-suites and fucntionality
+    - **DONE** Fill-in test-suites and fucntionality
     - Basic engine should be able to at least generate 100k states per second before proceeding to bot building
 
 - Train an extremely basic chess bot:
