@@ -156,7 +156,7 @@ class MainEngine:
         # Update the hash
         self.hash = self.hash_stack.pop()
 
-    def get_white_king_moves(self) -> list[tuple]:
+    def _get_white_king_moves(self) -> list[tuple]:
         """Gets all the possible king move instructions (not castling) for white"""
         king_idx = self.state[65]
         # If white has any castling rights remove them
@@ -176,7 +176,7 @@ class MainEngine:
                     if self.state[target_idx] == 0 or self.state[target_idx] > 6
         ]
 
-    def get_black_king_moves(self) -> list[tuple]:
+    def _get_black_king_moves(self) -> list[tuple]:
         """Gets all the possible king move instructions (not castling) for black"""
         king_idx = self.state[64]
         # If black has any castling rights remove them
@@ -200,8 +200,8 @@ class MainEngine:
         # These statements can be merged but it requires additional variable assignment
         # If it's white's turn
         if self.state[-1]:
-            return self.get_white_king_moves()
-        return self.get_black_king_moves()
+            return self._get_white_king_moves()
+        return self._get_black_king_moves()
 
     def get_knight_moves(self, knight_idx: int) -> list[tuple]:
         """Gets all the possible knight move instructions for the active player
@@ -312,7 +312,7 @@ class MainEngine:
 
         return self.get_blockable_moves(queen_idx, QUEEN_MOVES, additional_state_info)
 
-    def get_white_promotion_moves(self, pawn_idx: int) -> list[tuple]:
+    def _get_white_promotion_moves(self, pawn_idx: int) -> list[tuple]:
         """Gets all the promotion moves for the white pawn on pawn_idx"""
         moves = []
         additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
@@ -339,11 +339,11 @@ class MainEngine:
 
         return moves
 
-    def get_white_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+    def _get_white_pawn_moves(self, pawn_idx: int) -> list[tuple]:
         """Gets all the possible moves for the white pawn at pawn_idx"""
         # If the pawn will promote on it's move
         if pawn_idx // 8 == 1:
-            return self.get_white_promotion_moves(pawn_idx)
+            return self._get_white_promotion_moves(pawn_idx)
 
         moves = []
 
@@ -384,7 +384,7 @@ class MainEngine:
                              + (pawn_idx + 1, 0, pawn_idx + 1, 7))
         return moves
 
-    def get_black_promotion_moves(self, pawn_idx: int) -> list[tuple]:
+    def _get_black_promotion_moves(self, pawn_idx: int) -> list[tuple]:
         """Gets all the promotion moves for the black pawn on pawn_idx"""
         moves = []
         additional_state_info = (self.state[66], self.state[66], self.state[67], -1)
@@ -411,11 +411,11 @@ class MainEngine:
 
         return moves
 
-    def get_black_pawn_moves(self, pawn_idx: int) -> list[tuple]:
+    def _get_black_pawn_moves(self, pawn_idx: int) -> list[tuple]:
         """Gets all the possible moves for the black pawn at pawn_idx"""
         # If the pawn will promote
         if pawn_idx // 8 == 6:
-            return self.get_black_promotion_moves(pawn_idx)
+            return self._get_black_promotion_moves(pawn_idx)
 
         moves = []
         if self.state[67] >= 0:
@@ -457,8 +457,8 @@ class MainEngine:
         """Gets all the possible pawn moves for the pawn on pawn_idx"""
         # If it's white's turn
         if self.state[-1]:
-            return self.get_white_pawn_moves(pawn_idx)
-        return self.get_black_pawn_moves(pawn_idx)
+            return self._get_white_pawn_moves(pawn_idx)
+        return self._get_black_pawn_moves(pawn_idx)
 
     def get_castle_moves(self) -> list[tuple]:
         """Gets all possible castling moves"""
@@ -473,11 +473,11 @@ class MainEngine:
             if self.in_check(True):
                 return moves
 
-            if self.state[66] & 0b0001 and self.squares_safe_from_and_empty((61, 62), False):
+            if self.state[66] & 0b0001 and self._squares_safe_from_and_empty((61, 62), False):
                 moves.append((60, 6, 62, 0,
                               self.state[66], self.state[66] & 0b1100, self.state[67], -1,
                               63, 4, 61, 0))
-            if self.state[66] & 0b0010 and self.squares_safe_from_and_empty((57, 58, 59), False):
+            if self.state[66] & 0b0010 and self._squares_safe_from_and_empty((57, 58, 59), False):
                 moves.append((60, 6, 58, 0,
                               self.state[66], self.state[66] & 0b1100, self.state[67], -1,
                               56, 4, 59, 0))
@@ -487,17 +487,17 @@ class MainEngine:
         if self.in_check(False):
             return moves
 
-        if self.state[66] & 0b0100 and self.squares_safe_from_and_empty((5, 6), True):
+        if self.state[66] & 0b0100 and self._squares_safe_from_and_empty((5, 6), True):
             moves.append((4, 12, 6, 0,
                           self.state[66], self.state[66] & 0b0011, self.state[67], -1,
                           7, 10, 5, 0))
-        if self.state[66] & 0b1000 and self.squares_safe_from_and_empty((3, 2, 1), True):
+        if self.state[66] & 0b1000 and self._squares_safe_from_and_empty((3, 2, 1), True):
             moves.append((4, 12, 2, 0,
                           self.state[66], self.state[66] & 0b0011, self.state[67], -1,
                           0, 10, 3, 0))
         return moves
 
-    def square_attacked_by_white(self, sqaure: int) -> bool:
+    def _square_attacked_by_white(self, sqaure: int) -> bool:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
         for attacking_idx in KNIGHT_MOVES[sqaure]:
@@ -512,7 +512,7 @@ class MainEngine:
                     break
         return False
 
-    def square_attacked_by_black(self, sqaure: int) -> bool:
+    def _square_attacked_by_black(self, sqaure: int) -> bool:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
         for attacking_idx in KNIGHT_MOVES[sqaure]:
@@ -527,26 +527,26 @@ class MainEngine:
                     break
         return False
 
-    def square_attacked_by_player(self, square: int, player_is_white: bool) -> bool:
+    def _square_attacked_by_player(self, square: int, player_is_white: bool) -> bool:
         """Returns true if the given square is attacked by the given player"""
         if player_is_white:
-            return self.square_attacked_by_white(square)
-        return self.square_attacked_by_black(square)
+            return self._square_attacked_by_white(square)
+        return self._square_attacked_by_black(square)
 
-    def squares_safe_from_and_empty(self, squares: tuple[int], player_is_white: bool) -> bool:
+    def _squares_safe_from_and_empty(self, squares: tuple[int], player_is_white: bool) -> bool:
         """Returns True if the given squares are empty and are safe from player"""
         for square in squares:
             if self.state[square] > 0:
                 return False
-            if self.square_attacked_by_player(square, player_is_white):
+            if self._square_attacked_by_player(square, player_is_white):
                 return False
         return True
 
     def in_check(self, player_is_white: bool=None) -> bool:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
         if player_is_white:
-            return self.square_attacked_by_black(self.state[65])
-        return self.square_attacked_by_white(self.state[64])
+            return self._square_attacked_by_black(self.state[65])
+        return self._square_attacked_by_white(self.state[64])
 
     def get_white_moves(self) -> list[tuple]:
         """Gets all the moves for white in the current position"""
@@ -580,7 +580,7 @@ class MainEngine:
                 moves.extend(self.get_queen_moves(idx))
         return moves
 
-    def filter_illegal_moves(self, moves: list[tuple]) -> list[tuple]:
+    def _filter_illegal_moves(self, moves: list[tuple]) -> list[tuple]:
         """Tries all the instructions in moves and returns the ones that result
         in a legal state"""
         legal_moves = []
@@ -602,7 +602,7 @@ class MainEngine:
             moves.extend(self.get_white_moves())
         else:
             moves.extend(self.get_black_moves())
-        return self.filter_illegal_moves(moves)
+        return self._filter_illegal_moves(moves)
 
     def sufficient_material(self) -> bool:
         """Checks if there is sufficient mating material"""
