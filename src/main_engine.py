@@ -497,35 +497,37 @@ class MainEngine:
                           0, 10, 3, 0))
         return moves
 
-    def _square_attacked_by_white(self, sqaure: int) -> bool:
+    def _square_attacked_by_white(self, sqaure: int) -> list[int]:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
+        attacking_indicies = []
         for attacking_idx in KNIGHT_MOVES[sqaure]:
             if self.state[attacking_idx] == 2:
-                return True
+                attacking_indicies.append(attacking_idx)
 
         for attacking_direciton in BLOCKABLE_ATTACK_DICT_WHITE[sqaure]:
             for attacking_idx, threats in attacking_direciton:
                 if self.state[attacking_idx] in threats:
-                    return True
+                    attacking_indicies.append(attacking_idx)
                 if self.state[attacking_idx] > 0:
                     break
-        return False
+        return attacking_indicies
 
-    def _square_attacked_by_black(self, sqaure: int) -> bool:
+    def _square_attacked_by_black(self, sqaure: int) -> list[int]:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
+        attacking_indicies = []
         for attacking_idx in KNIGHT_MOVES[sqaure]:
             if self.state[attacking_idx] == 8:
-                return True
+                attacking_indicies.append(attacking_idx)
 
         for attacking_direciton in BLOCKABLE_ATTACK_DICT_BLACK[sqaure]:
             for attacking_idx, threats in attacking_direciton:
                 if self.state[attacking_idx] in threats:
-                    return True
+                    attacking_indicies.append(attacking_idx)
                 if self.state[attacking_idx] > 0:
                     break
-        return False
+        return attacking_indicies
 
     def _square_attacked_by_player(self, square: int, player_is_white: bool) -> bool:
         """Returns true if the given square is attacked by the given player"""
@@ -542,7 +544,7 @@ class MainEngine:
                 return False
         return True
 
-    def in_check(self, player_is_white: bool=None) -> bool:
+    def in_check(self, player_is_white: bool=None) -> list[int]:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
         if player_is_white:
             return self._square_attacked_by_black(self.state[65])
