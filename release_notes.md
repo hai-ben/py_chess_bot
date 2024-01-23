@@ -36,7 +36,7 @@
         Ran 10 with maximum 100 considering 32056 moves
         Ran in 1.3503s with peak memory usage 0.1MB of memory at peak.
         The program failed to release 0.0MB after execution.
-- v00.03.06:
+- v00.03.01:
     - Switched over to a graph-based engine for faster read/writes
     - Added seeds for the random library to make comparisons consistent
     - New Performance:

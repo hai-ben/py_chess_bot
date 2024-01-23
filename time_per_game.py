@@ -33,12 +33,12 @@ def perf_tracking(func, args=None, kwargs=None):
     return end_time - start_time, mem_usage
 
 
-# Old small board performance
-print("Running bitstring engine")
-total_time, mem = perf_tracking(run_games, kwargs={"adapter": SmallBoardAdapter})
-print(f"Bitstring ran in {total_time:1.4f}s with peak memory usage " +\
-      f"{(mem[1]):5.0f} bytes of memory at peak.")
-print(f"The program failed to release {(mem[0]):5.0f} bytes after execution.\n")
+# # Old small board performance
+# print("Running bitstring engine")
+# total_time, mem = perf_tracking(run_games, kwargs={"adapter": SmallBoardAdapter})
+# print(f"Bitstring ran in {total_time:1.4f}s with peak memory usage " +\
+#       f"{(mem[1]):5.0f} bytes of memory at peak.")
+# print(f"The program failed to release {(mem[0]):5.0f} bytes after execution.\n")
 
 
 # New main engine performance
