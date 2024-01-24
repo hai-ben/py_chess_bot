@@ -52,7 +52,7 @@ def pawn_single_move_generator(player_is_white: bool) -> dict[int, tuple]:
     """Generates the instruction set to move a pawn forward"""
     if player_is_white:
         moves = {idx: (idx, 1, idx - 8, 0) for idx in range(55, 15, -1)}
-        for idx in range(14, 7, -1):
+        for idx in range(15, 7, -1):
             move_tuples = []
             for piece in range(2, 6):
                 move_tuples.append(((idx, 1, idx, piece), (idx, piece, idx - 8, 0)))
@@ -192,3 +192,25 @@ def generate_vector_to_square_from_lookup() -> dict[int, dict[int, tuple]]:
                 to_from_lookup[square_idx][new_square] = direction
 
     return to_from_lookup
+
+
+def generate_moves_from_square_along_vector() -> dict[int, dict[tuple, list[int]]]:
+    """MOVES_FROM_SQUARE_ALONG_VECTOR[SQUARE][VECTOR] = [SQUARE1, SQUARE2]
+    MOVES_FROM_SQUARE_ALONG_VECTOR[c6][(-1, -1)] = [b7, a8]"""
+    from_square_dict = {}
+    # file, rank
+    directions = [(1, 0), (0, 1), (0, -1), (-1, 0), (-1, 1), (1, 1), (-1, -1), (1, -1)]
+    for square_idx in range(64):
+        from_square_dict[square_idx] = {}
+        start_rank, start_file = square_idx // 8, square_idx % 8
+        for direction in directions:
+            squares = []
+            for i in range(1, 8):
+                new_rank = start_rank + i * direction[1]
+                new_file = start_file + i * direction[0]
+                if new_rank > 7 or new_file > 7 or new_rank < 0 or new_file < 0:
+                    break
+                squares.append(new_rank * 8 + new_file)
+            if squares:
+                from_square_dict[square_idx][direction] = squares
+    return from_square_dict

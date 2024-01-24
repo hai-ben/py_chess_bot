@@ -2,7 +2,7 @@
 from itertools import product
 from src.resources.move_dict_generator import move_dict_for_vectors, move_dict_for_directions,\
     pawn_single_move_generator, make_blockable_attacks_dict, unblockable_attacking_tiles,\
-    blocking_moves, generate_vector_to_square_from_lookup
+    blocking_moves, generate_vector_to_square_from_lookup, generate_moves_from_square_along_vector
 
 KING_MOVES = move_dict_for_vectors([(1, 1), (-1, 1), (1, -1), (-1, -1),
                                     (1, 0), (-1, 0), (0, -1), (0, 1)])
@@ -21,6 +21,7 @@ BLOCKABLE_ATTACK_DICT_BLACK = make_blockable_attacks_dict(False)
 UNBLOCKABLE_ATTACKS_AT = unblockable_attacking_tiles()
 MOVES_TO_BLOCK_ATTACK_ON_FROM = blocking_moves()
 VECTOR_TO_SQUARE_FROM = generate_vector_to_square_from_lookup()
+MOVES_FROM_SQUARE_ALONG_VECTOR = generate_moves_from_square_along_vector()
 
 WHITE_THREATS_IN_DIRECTION = {
     (1, 1): {3, 5},
