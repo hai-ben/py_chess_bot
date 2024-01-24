@@ -17,7 +17,7 @@ ADVANCED_MOVE_TESTS = {
          [None, 0, None, 1, None, 2, None, 3, None, 4, None, 5, None, 6, None, 7] + [None] * 4],
         ("get_all_moves", [])
     ),
-    "CANT_MOVE_PINNED_PIECES": (
+    "CANT_MOVE_PINNED_PIECES_W": (
         [("a2", "w_king"), ("b2", "w_pawn"), ("c2", "b_rook"),
          (CASTLE_IDX, 0), (W_KING_IDX, "a2")],
         [["a2"] * 4,
@@ -26,7 +26,25 @@ ADVANCED_MOVE_TESTS = {
          ["empty"] * 4],
         ("get_all_moves", [])
     ),
-    "KING_WONT_WALK_INTO_CHECK": (
+    "CANT_MOVE_PINNED_PIECES_B": (
+        [("a2", "b_king"), ("b2", "b_pawn"), ("c2", "w_rook"),
+         (CASTLE_IDX, 0), (B_KING_IDX, "a2"), (TURN_IDX, False)],
+        [["a2"] * 4,
+         ["b_king"] * 4,
+         ["a3", "a1", "b3", "b1"],
+         ["empty"] * 4],
+        ("get_all_moves", [])
+    ),
+    "KING_WONT_WALK_INTO_CHECK_W": (
+        [("a1", "w_king"), ("c1", "b_king"), (W_KING_IDX, "a1"),
+         (CASTLE_IDX, 0), (B_KING_IDX, "c1")],
+        [["a1"],
+         ["w_king"],
+         ["a2"],
+         ["empty"]],
+        ("get_all_moves", [])
+    ),
+    "KING_WONT_WALK_INTO_CHECK_B": (
         [("a1", "b_king"), ("c1", "w_king"), (B_KING_IDX, "a1"),
          (CASTLE_IDX, 0), (W_KING_IDX, "c1"), (TURN_IDX, False)],
         [["a1"],

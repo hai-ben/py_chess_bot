@@ -53,4 +53,7 @@
         Considering ~43M states is ran at 459s in main engine vs 500s for the last commit.  
 - v00.03.05:
     - Stopped using my custom __iter__ function for another 10% speedup.
-        Consdering ~43M states is ran at 423s
+        Considering ~43M states ran in 423s with profiler
+- v00.03.07:
+    - Improved some logic branching for ~7% speedup.
+        Considering ~43M states ran in 394s with profiler
