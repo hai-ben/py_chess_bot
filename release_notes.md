@@ -42,3 +42,9 @@
     - New Performance:
         Ran 10 games considering 28915 moves
         Graph engine ran in 0.7498s with peak memory usage 44320 bytes of memory at peak.
+- v00.03.02:
+    - Switched to checking for illegal positions before moves are made instead of after
+        Ran 10 games considering 30591 moves
+        Graph engine ran in 0.1647s with peak memory usage 43736 bytes of memory at peak.
+        The program failed to release 15344 bytes after execution.
+    - Difference is likely due to bugs found in some of the move_dict_generator functions
