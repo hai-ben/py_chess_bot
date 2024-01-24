@@ -71,4 +71,40 @@ ADVANCED_MOVE_TESTS = {
          ["empty"]],
         ("get_all_moves", [])
     ),
+    "MUST_CAPTURE_OR_MOVE_CLOSE_ATTACKS_W": (
+        [("c6", "w_king"), (W_KING_IDX, "c6"), ("d5", "b_pawn"), ("a7", "b_rook"),
+         (CASTLE_IDX, 0), ("b8", "b_rook")],
+        [["c6"] * 3,
+         ["w_king"] * 3,
+         ["c5", "d6", "d5"],
+         ["empty"] * 2 + ["b_pawn"]],
+        ("get_all_moves", [])
+    ),
+    "MUST_CAPTURE_OR_MOVE_CLOSE_ATTACKS_B": (
+        [("h3", "b_king"), ("e5", "b_pawn"), (B_KING_IDX, "h3"), (TURN_IDX, False),
+         (CASTLE_IDX, 0), ("g1", "w_queen"), ("f4", "w_knight"), ("g8", "b_rook")],
+        [["h3", "e5"],
+         ["b_king", "b_pawn"],
+         ["h4", "f4"],
+         ["empty", "w_knight"]],
+        ("get_all_moves", [])
+    ),
+    "BLOCKING_MOVES_ALLOWED_W": (
+        [("h1", "b_king"), (W_KING_IDX, "h1"), ("g1", "w_pawn"), ("g2", "w_pawn"),
+         (CASTLE_IDX, 0), ("a3", "w_rook"), ("h8", "b_rook")],
+        [["a3"],
+         ["w_rook"],
+         ["h3"],
+         ["empty"]],
+        ("get_all_moves", [])
+    ),
+    "BLOCKING_MOVES_ALLOWED_B": (
+        [("a1", "b_king"), ("f2", "b_bishop"), (B_KING_IDX, "a1"), (TURN_IDX, False),
+         (CASTLE_IDX, 0), ("b1", "b_knight"), ("a2", "b_pawn"), ("h8", "w_bishop")],
+        [["f2", "b1"],
+         ["b_bishop", "b_knight"],
+         ["d4", "c3"],
+         ["empty"] * 2],
+        ("get_all_moves", [])
+    ),
 }

@@ -105,7 +105,7 @@ def make_blockable_attacks_dict(player_is_white: bool)\
             for i in range(1, 8):
                 new_file = start_file + i * file_direciton
                 new_rank = start_rank + i * rank_direction
-                if not ((0 <= new_file <= 7) and (0 <= new_rank <= 7)):
+                if new_file > 7 or new_rank > 7 or new_file < 0 or new_rank < 0:
                     break
                 if i == 1:
                     attack_on_direction.append((new_rank * 8 + new_file, close_threats))
@@ -114,3 +114,81 @@ def make_blockable_attacks_dict(player_is_white: bool)\
             if attack_on_direction:
                 attack_dict[square_idx].append(attack_on_direction)
     return attack_dict
+
+
+def unblockable_attacking_tiles() -> dict[int, set[int]]:
+    """Makes a dictionary that has all of the tiles that if attacking from, are not blockable"""
+    adjacent_tiles = {}
+    directions = [(1, 0), (0, 1), (0, -1), (-1, 0), (-1, 1), (1, 1), (-1, -1), (1, -1)]
+    knight_moves = move_dict_for_vectors([(2, 1), (2, -1), (-2, 1), (-2, -1),
+                                          (1, 2), (-1, 2), (1, -2), (-1, -2)])
+    for square_idx in range(64):
+        adjacent_tiles[square_idx] = []
+        start_rank, start_file = square_idx // 8, square_idx % 8
+        for (file_direciton, rank_direction) in directions:
+            new_file = start_file + file_direciton
+            new_rank = start_rank + rank_direction
+            if new_file > 7 or new_rank > 7 or new_file < 0 or new_rank < 0:
+                continue
+            adjacent_tiles[square_idx].append(new_rank * 8 + new_file)
+        adjacent_tiles[square_idx].extend(knight_moves[square_idx])
+    return {square_idx: set(squares) for square_idx, squares in adjacent_tiles.items()}
+
+
+def blocking_moves() -> dict[int, dict[int, set]]:
+    """BLOCKING_MOVES[KING_IDX][ATTACKER_IDX] = {SQUARES_THAT_BLOCK_THE_ATTACK}"""
+    block_move_dict = {}
+    directions = [(1, 0), (0, 1), (0, -1), (-1, 0), (-1, 1), (1, 1), (-1, -1), (1, -1)]
+
+    # For all the squares on the board
+    for king_idx in range(64):
+        block_move_dict[king_idx] = {}
+        king_rank, king_file = king_idx // 8, king_idx % 8
+
+        # For all the directions a king can be attacked and also blocked alogn
+        for (file_direciton, rank_direction) in directions:
+
+            # For all possible positions in that direction where the attack
+            # can still be blocked starting at a spacing that leaves room for a blocker
+            for i in range(2, 8):
+                attacker_file = king_file + i * file_direciton
+                attacker_rank = king_rank + i * rank_direction
+
+                # If the attacker square is off the board move to the next direction
+                if attacker_file > 7 or attacker_rank > 7 or\
+                        attacker_file < 0 or attacker_rank < 0:
+                    break
+
+                # Otherwise get the squares that would block an attack
+                attacker_square = attacker_rank * 8 + attacker_file
+                block_move_dict[king_idx][attacker_square] = set()
+
+                # Going from beside the king to beside the attacker
+                # Everything is now guaranteed to be on the board
+                for j in range(1, i):
+                    block_file = king_file + j * file_direciton
+                    block_rank = king_rank + j * rank_direction
+                    block_move_dict[king_idx][attacker_square].add(block_rank * 8 + block_file)
+
+    return block_move_dict
+
+
+def generate_vector_to_square_from_lookup() -> dict[int, dict[int, tuple]]:
+    """VECTOR_TO_SQUARE_FROM[FROM_SQUARE][TO_SQUARE] = (FILE_DIRECTION, RANK_DIRECTION)
+    VECTOR_TO_SQUARE_FROM[a8][h1] = (1, 1)"""
+    to_from_lookup = {}
+    directions = [(1, 0), (0, 1), (0, -1), (-1, 0), (-1, 1), (1, 1), (-1, -1), (1, -1)]
+
+    for square_idx in range(64):
+        to_from_lookup[square_idx] = {}
+        start_rank, start_file = square_idx // 8, square_idx % 8
+        for direction in directions:
+            for i in range(1, 8):
+                new_file = start_file + i * direction[0]
+                new_rank = start_rank + i * direction[1]
+                if new_file > 7 or new_rank > 7 or new_file < 0 or new_rank < 0:
+                    continue
+                new_square = new_rank * 8 + new_file
+                to_from_lookup[square_idx][new_square] = direction
+
+    return to_from_lookup

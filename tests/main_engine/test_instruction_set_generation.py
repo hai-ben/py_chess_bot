@@ -58,6 +58,7 @@ def test_get_moves(board_state_generator, test_key: str):
     actual_instructions = set(getattr(board, func)(*args))
     print(f"{actual_instructions=}")
     print(f"{expected_instructions=}")
+    print(f"Board:\n{board}\n")
 
     # Redundant checking for easy debugging
     assert len(actual_instructions) == len(expected_instructions)

@@ -3,7 +3,8 @@ from collections import deque, defaultdict
 from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK_MOVES,\
     QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
     PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK,\
-    ADJACENT_TILES
+    UNBLOCKABLE_ATTACKS_AT, MOVES_TO_BLOCK_ATTACK_ON_FROM, VECTOR_TO_SQUARE_FROM,\
+    WHITE_THREATS_IN_DIRECTION, BLACK_THREATS_IN_DIRECTION
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -15,6 +16,9 @@ STARTING_STATE =\
     + [1] * 8 + [4, 2, 3, 5, 6, 3, 2, 4]\
     + [4] + [60] + [0b1111] + [-1] + [True]
 SUFFICIENT_MATERIAL = {1, 4, 5, 7, 10, 11}
+WHITE_PIECES = {1, 2, 3, 4, 5, 6}
+BLACK_PIECES = {7, 8, 9, 10, 11, 12}
+
 
 class MainEngine:
     """See data_structures.md for detailed data structure information"""
@@ -498,15 +502,15 @@ class MainEngine:
                           0, 10, 3, 0))
         return moves
 
-    def _square_attacked_by_white(self, sqaure: int) -> list[int]:
+    def _square_attacked_by_white(self, square: int) -> list[int]:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
         attacking_indicies = []
-        for attacking_idx in KNIGHT_MOVES[sqaure]:
+        for attacking_idx in KNIGHT_MOVES[square]:
             if self.state[attacking_idx] == 2:
                 attacking_indicies.append(attacking_idx)
 
-        for attacking_direciton in BLOCKABLE_ATTACK_DICT_WHITE[sqaure]:
+        for attacking_direciton in BLOCKABLE_ATTACK_DICT_WHITE[square]:
             for attacking_idx, threats in attacking_direciton:
                 if self.state[attacking_idx] in threats:
                     attacking_indicies.append(attacking_idx)
@@ -514,15 +518,15 @@ class MainEngine:
                     break
         return attacking_indicies
 
-    def _square_attacked_by_black(self, sqaure: int) -> list[int]:
+    def _square_attacked_by_black(self, square: int) -> list[int]:
         """Checks wheteher the square is being attacked by a black piece"""
         # Check if the square is being attacked by a black knight
         attacking_indicies = []
-        for attacking_idx in KNIGHT_MOVES[sqaure]:
+        for attacking_idx in KNIGHT_MOVES[square]:
             if self.state[attacking_idx] == 8:
                 attacking_indicies.append(attacking_idx)
 
-        for attacking_direciton in BLOCKABLE_ATTACK_DICT_BLACK[sqaure]:
+        for attacking_direciton in BLOCKABLE_ATTACK_DICT_BLACK[square]:
             for attacking_idx, threats in attacking_direciton:
                 if self.state[attacking_idx] in threats:
                     attacking_indicies.append(attacking_idx)
@@ -548,6 +552,7 @@ class MainEngine:
 
     def squares_attacking_king(self, player_is_white: bool=None) -> list[int]:
         "Checks the tile the player's king is on is threatened by a piece of the enemy"
+        player_is_white = self.state[-1] if player_is_white is None else player_is_white
         if player_is_white:
             return self._square_attacked_by_black(self.state[65])
         return self._square_attacked_by_white(self.state[64])
@@ -584,27 +589,117 @@ class MainEngine:
                 moves.extend(self.get_queen_moves(idx))
         return moves
 
-    def _filter_illegal_moves(self, moves: list[tuple]) -> list[tuple]:
-        """Tries all the instructions in moves and returns the ones that result
-        in a legal state"""
+    def _filter_illegal_moves_while_in_check(self, moves: list[tuple],
+                                             squares_attacking_king: list[int]) -> list[tuple]:
+        """Removes all the illegal moves in moves for when the active player is in check"""
         legal_moves = []
-
-        squares_attacking_king = self.squares_attacking_king()
+        king_idx = self.state[64 + self.state[-1]]
+        # If the player is in double check
         if len(squares_attacking_king) >= 2:
             for move in moves:
-                if move[1] != (6 if self.state[-1] else 12):
-                    continue
-
-                if not self._square_attacked_by_player(move[2], not self.state[-1]):
+                # King moves to an unthreatened square
+                if move[0] == king_idx and\
+                        not self._square_attacked_by_player(move[2], not self.state[-1]):
                     legal_moves.append(move)
 
             return legal_moves
 
+        # If the check is caused by an unblockable attack
+        if squares_attacking_king[0] in UNBLOCKABLE_ATTACKS_AT[king_idx]:
+            # Legal moves only move the king to a non-threatened square or capture the piece
+            for move in moves:
+                # King moves to an unthreatened square
+                if move[0] == king_idx:
+                    if self._square_attacked_by_player(move[2], not self.state[-1]):
+                        continue
+                    legal_moves.append(move)
+
+                # Moves that capture the attacking piece
+                elif move[2] == squares_attacking_king[0]:
+                    legal_moves.append(move)
+            return legal_moves
+
+        # Otherwise the check must be caused by a blockable attack
+        king_idx = self.state[64 + self.state[-1]]
         for move in moves:
-            self.execute_instructions(move)
-            if not self.squares_attacking_king(not self.state[-1]):
+            # King moves to an unthreatened square
+            if move[0] == king_idx:
+                if self._square_attacked_by_player(move[2], not self.state[-1]):
+                    continue
                 legal_moves.append(move)
-            self.reverse_last_instruction()
+
+            # Moves that capture the attacking piece
+            elif move[2] == squares_attacking_king[0]:
+                legal_moves.append(move)
+
+            # Moves that block the attacking piece
+            elif move[2] in MOVES_TO_BLOCK_ATTACK_ON_FROM[king_idx][squares_attacking_king[0]]:
+                legal_moves.append(move)
+        return legal_moves
+
+    def _move_reveals_check(self, move: tuple) -> bool:
+        """Determines if a move reveals a check"""
+        king_idx = self.state[64 + self.state[-1]]
+        unit_line_from_king_to_piece = VECTOR_TO_SQUARE_FROM[king_idx].get(move[0], None)
+
+        # If there is no straight line from the move to the king no pin can exist
+        if unit_line_from_king_to_piece is None:
+            return False
+
+        file_direction, rank_direciton = unit_line_from_king_to_piece
+        start_rank, start_file = king_idx // 8, king_idx % 8
+        for i in range(1, 8):
+            new_rank = start_rank + i * rank_direciton
+            new_file = start_file + i * file_direction
+
+            # If the new square is off of the board
+            if new_rank > 7 or new_file > 7 or new_rank < 0 or new_file < 0:
+                break
+
+            square_idx = new_rank * 8 + new_file
+
+            # Skip the square the origin piece is on
+            if square_idx == move[0]:
+                continue
+
+            # If the piece is moving along that vector, it won't reveal a check
+            if square_idx == move[2]:
+                return False
+
+            # If there is friendly piece on this vector, it won't reveal a check
+            if self.state[square_idx] in (WHITE_PIECES if self.state[-1] else BLACK_PIECES):
+                return False
+
+            # If there is an enemy that could cause a check on this vector
+            if self.state[square_idx]\
+                    in (BLACK_THREATS_IN_DIRECTION[unit_line_from_king_to_piece]\
+                            if self.state[-1] else\
+                                WHITE_THREATS_IN_DIRECTION[unit_line_from_king_to_piece]):
+                return True
+
+        return False
+
+    def _filter_illegal_moves(self, moves: list[tuple]) -> list[tuple]:
+        """Returns a copy of moves but removing any move that causes check"""
+
+        # There is a faster filter if the player is already in check
+        squares_attacking_king = self.squares_attacking_king()
+        if squares_attacking_king:
+            return self._filter_illegal_moves_while_in_check(moves, squares_attacking_king)
+
+        legal_moves = []
+        king_idx = self.state[64 + self.state[-1]]
+        for move in moves:
+            # The king cannot step onto a threatened tile
+            if move[0] == king_idx and\
+                    self._square_attacked_by_player(move[2], not self.state[-1]):
+                continue
+
+            # A piece cannot reveal a check
+            if self._move_reveals_check(move):
+                continue
+
+            legal_moves.append(move)
         return legal_moves
 
     def get_all_moves(self) -> list[tuple]:
