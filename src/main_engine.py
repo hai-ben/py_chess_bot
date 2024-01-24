@@ -4,7 +4,7 @@ from src.resources.move_dict import KING_MOVES, KNIGHT_MOVES, BISHOP_MOVES, ROOK
     QUEEN_MOVES, PAWN_SINGLE_MOVES_WHITE, PAWN_SINGLE_MOVES_BLACK, PAWN_DOUBLE_MOVES_WHITE,\
     PAWN_DOUBLE_MOVES_BLACK, BLOCKABLE_ATTACK_DICT_WHITE, BLOCKABLE_ATTACK_DICT_BLACK,\
     UNBLOCKABLE_ATTACKS_AT, MOVES_TO_BLOCK_ATTACK_ON_FROM, VECTOR_TO_SQUARE_FROM,\
-    WHITE_THREATS_IN_DIRECTION, BLACK_THREATS_IN_DIRECTION
+    WHITE_THREATS_IN_DIRECTION, BLACK_THREATS_IN_DIRECTION, MOVES_FROM_SQUARE_ALONG_VECTOR
 from src.resources.zobrist_hashes import ZOBRIST_TABLE
 
 ASCII_LOOKUP = {1: "♙",  2: "♘", 3: "♗", 4: "♖", 5: "♕", 6: "♔",
@@ -646,18 +646,7 @@ class MainEngine:
         if unit_line_from_king_to_piece is None:
             return False
 
-        file_direction, rank_direciton = unit_line_from_king_to_piece
-        start_rank, start_file = king_idx // 8, king_idx % 8
-        for i in range(1, 8):
-            new_rank = start_rank + i * rank_direciton
-            new_file = start_file + i * file_direction
-
-            # If the new square is off of the board
-            if new_rank > 7 or new_file > 7 or new_rank < 0 or new_file < 0:
-                break
-
-            square_idx = new_rank * 8 + new_file
-
+        for square_idx in MOVES_FROM_SQUARE_ALONG_VECTOR[king_idx][unit_line_from_king_to_piece]:
             # Skip the square the origin piece is on
             if square_idx == move[0]:
                 continue

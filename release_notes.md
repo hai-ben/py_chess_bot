@@ -48,3 +48,5 @@
         Graph engine ran in 0.1647s with peak memory usage 43736 bytes of memory at peak.
         The program failed to release 15344 bytes after execution.
     - Difference is likely due to bugs found in some of the move_dict_generator functions
+- v00.03.03:
+    - Dictionarized the _move_reveals_check function to get a ~10% speedup. Considering ~43M states is ran at 459s in main engine vs 500s for the last commit.
