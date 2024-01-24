@@ -560,7 +560,9 @@ class MainEngine:
     def get_white_moves(self) -> list[tuple]:
         """Gets all the moves for white in the current position"""
         moves = []
-        for idx, state in enumerate(self):
+        for idx, state in enumerate(self.state[:64]):
+            if state == 0 or state > 6:
+                continue
             if state == 1:
                 moves.extend(self.get_pawn_moves(idx))
             elif state == 2:
@@ -576,7 +578,9 @@ class MainEngine:
     def get_black_moves(self) -> list[tuple]:
         """Gets all the moves for black in the current position"""
         moves = []
-        for idx, state in enumerate(self):
+        for idx, state in enumerate(self.state[:64]):
+            if state < 7:
+                continue
             if state == 7:
                 moves.extend(self.get_pawn_moves(idx))
             elif state == 8:
