@@ -22,13 +22,13 @@ def fixture_board_state_generator() -> Callable:
     This nested function definition is due to pytest's strange imports"""
     def board_generator(changed_tiles: list[tuple]) -> MainEngine:
         """Updates the indicies of an empty MainEngine's state given the changed_tiles"""
-        board = MainEngine([0] * 66 + [0b1111] + [-1] + [True])
+        desired_state = [0] * 66 + [0b1111] + [-1] + [True]
         for idx, val in changed_tiles:
             if not isinstance(idx, int):
                 idx = SQUARE_IDX[idx]
             if not isinstance(val, (int, bool)):
                 val = SQUARE_STATES.get(
                     val, EP_FILE.get(val, PLAYER_TURN.get(val, SQUARE_IDX.get(val, None))))
-            board.state[idx] = val
-        return board
+            desired_state[idx] = val
+        return MainEngine(desired_state)
     return board_generator

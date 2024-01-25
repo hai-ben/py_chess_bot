@@ -1,9 +1,9 @@
 """Advanced test cases for the instruction set generator"""
-from src.resources.data_translators import B_KING_IDX, W_KING_IDX, CASTLE_IDX, TURN_IDX
+from src.resources.data_translators import B_KING_IDX, W_KING_IDX, CASTLE_IDX, TURN_IDX, EP_IDX
 
 
 ADVANCED_MOVE_TESTS = {
-    "OPENING MOVES": (
+    "OPENING_MOVES": (
         [],
         [["a2"] * 2 + ["b2"] * 2 + ["c2"] * 2 + ["d2"] * 2 + ["e2"] * 2 + ["f2"] * 2 + ["g2"] * 2\
          + ["h2"] * 2 + ["b1"] * 2 + ["g1"] * 2,
@@ -123,6 +123,33 @@ ADVANCED_MOVE_TESTS = {
          ["b_bishop", "b_knight"],
          ["d4", "c3"],
          ["empty"] * 2],
+        ("get_all_moves", [])
+    ),
+    "TAKE_ROOK_DISABLE_CASTLE_W_SHORT": (
+        [("h1", "w_rook"), ("b7", "b_bishop"), ("a8", "b_king"),
+         (B_KING_IDX, "a8"), (TURN_IDX, False), (CASTLE_IDX, 0b0011)],
+        [["b7"] * 8 + ["a8"] * 2,
+         ["b_bishop"] * 8 + ["b_king"] * 2,
+         ["c6", "d5", "e4", "f3", "g2", "a6", "c8", "h1", "a7", "b8"],
+         ["empty"] * 7 + ["w_rook"] + ["empty"] * 2,
+         [None] * 7 + [0b0011] + [None] * 2,
+         [None] * 7 + [0b0010] + [None] * 2,
+         [None] * 7 + [-1] + [None] * 2,
+         [None] * 7 + [-1] + [None] * 2],
+        ("get_all_moves", [])
+    ),
+    "B_KING_REMOVES_EP": (
+        [("a8", "b_queen"), ("a7", "b_king"), ("h4", "w_king"), (W_KING_IDX, "h4"),
+         (B_KING_IDX, "a7"), (TURN_IDX, False), (CASTLE_IDX, 0b0000), (EP_IDX, 6)],
+        [["a8"] * 14 + ["a7"] * 4,
+         ["b_queen"] * 14 + ["b_king"] * 4,
+         ["b8", "c8", "d8", "e8", "f8", "g8", "h8", "b7", "c6", "d5", "e4", "f3", "g2", "h1",
+          "a6", "b6", "b7", "b8"],
+         ["empty"] * 18,
+         [0] * 18,
+         [0] * 18,
+         [6] * 18,
+         [-1] * 18],
         ("get_all_moves", [])
     ),
 }

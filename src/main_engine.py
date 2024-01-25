@@ -18,6 +18,7 @@ STARTING_STATE =\
 SUFFICIENT_MATERIAL = {1, 4, 5, 7, 10, 11}
 WHITE_PIECES = {1, 2, 3, 4, 5, 6}
 BLACK_PIECES = {7, 8, 9, 10, 11, 12}
+CASTLE_RIGHT_REMOVAL = {0: 0b0111, 7: 0b1011, 56: 0b1101, 63: 0b1110}
 
 
 class MainEngine:
@@ -161,10 +162,28 @@ class MainEngine:
         # Update the hash
         self.hash = self.hash_stack.pop()
 
+    def _get_black_king_moves(self, king_idx: int) -> list[tuple]:
+        """Gets all the possible king move instructions (not castling) for black"""
+        # If black has any castling rights or there is an enpassant
+        if self.state[66] & 0b1100 or self.state[67] >= 0:
+            castle_to_state = self.state[66] & 0b0011
+            return [
+                (king_idx, self.state[king_idx],
+                target_idx, self.state[target_idx],
+                self.state[66], castle_to_state, self.state[67], -1)
+                for target_idx in KING_MOVES[king_idx]
+                if self.state[target_idx] < 7
+            ]
+        # Otherwise don't include them in the return statement
+        return [
+            (king_idx, self.state[king_idx], target_idx, self.state[target_idx],)
+            for target_idx in KING_MOVES[king_idx] if self.state[target_idx] < 7
+        ]
+
     def _get_white_king_moves(self, king_idx: int) -> list[tuple]:
         """Gets all the possible king move instructions (not castling) for white"""
         # If white has any castling rights remove them
-        if self.state[66] & 0b0011:
+        if self.state[66] & 0b0011 or self.state[67] >= 0:
             castle_to_state = self.state[66] & 0b1100
             return [
                 (king_idx, self.state[king_idx],
@@ -180,28 +199,10 @@ class MainEngine:
                     if self.state[target_idx] == 0 or self.state[target_idx] > 6
         ]
 
-    def _get_black_king_moves(self, king_idx: int) -> list[tuple]:
-        """Gets all the possible king move instructions (not castling) for black"""
-        # If black has any castling rights remove them
-        if self.state[66] & 0b1100:
-            castle_to_state = self.state[66] & 0b0011
-            return [
-                (king_idx, self.state[king_idx],
-                target_idx, self.state[target_idx],
-                self.state[66], castle_to_state, self.state[67], -1)
-                for target_idx in KING_MOVES[king_idx]
-                if self.state[target_idx] < 7
-            ]
-        # Otherwise don't include them in the return statement
-        return [
-            (king_idx, self.state[king_idx], target_idx, self.state[target_idx],)
-            for target_idx in KING_MOVES[king_idx] if self.state[target_idx] < 7
-        ]
-
     def _get_knight_moves_black(self, knight_idx: int) -> list[tuple]:
         """Gets all the possible knight move instructions for the black player
         for the knight on knight_idx"""
-        if self.state[67] > 0:
+        if self.state[67] >= 0:
             return [
                 (knight_idx, self.state[knight_idx],
                     target_idx, self.state[target_idx],
@@ -219,7 +220,7 @@ class MainEngine:
     def _get_knight_moves_white(self, knight_idx: int) -> list[tuple]:
         """Gets all the possible knight move instructions for the white player
         for the knight on knight_idx"""
-        if self.state[67] > 0:
+        if self.state[67] >= 0:
             return [
                 (knight_idx, self.state[knight_idx],
                     target_idx, self.state[target_idx],
@@ -355,7 +356,7 @@ class MainEngine:
             additional_state_info = ()
 
         return self._get_blockable_moves_white(queen_idx, QUEEN_MOVES, additional_state_info)
-    
+
     def _get_white_promotion_moves(self, pawn_idx: int) -> list[tuple]:
         """Gets all the promotion moves for the white pawn on pawn_idx"""
         moves = []
@@ -680,38 +681,37 @@ class MainEngine:
                 moves.extend(self._get_black_king_moves(idx))
         return moves
 
-    def _filter_illegal_moves_while_in_check(self, moves: list[tuple],
-                                             squares_attacking_king: list[int],
-                                             king_idx: int,
-                                             threatening_player: bool) -> list[tuple]:
-        """Removes all the illegal moves in moves for when the active player is in check"""
+    def _filter_moves_double_check(self, moves: list[tuple], king_idx: int,
+                                        threatening_player: bool) -> list[tuple]:
+        """Removes all the illegal moves in moves for when active player is in double check"""
         legal_moves = []
-        # If the player is in double check
-        if len(squares_attacking_king) >= 2:
-            for move in moves:
-                # King moves to an unthreatened square
-                if move[0] == king_idx and\
-                        not self._square_attacked_by_player(move[2], threatening_player):
-                    legal_moves.append(move)
+        for move in moves:
+            # King moves to an unthreatened square
+            if move[0] == king_idx and\
+                    not self._square_attacked_by_player(move[2], threatening_player):
+                legal_moves.append(move)
+        return legal_moves
 
-            return legal_moves
+    def _filter_moves_unblockable_check(self, moves: list[tuple], idx_attacking_king: list[int],
+                                        king_idx: int, threatening_player: bool) -> list[tuple]:
+        """Removes all the moves from moves that don't resolve an unblockable check"""
+        # Legal moves only move the king to a non-threatened square or capture the piece
+        legal_moves =[]
+        for move in moves:
+            # King moves to an unthreatened square
+            if move[0] == king_idx:
+                if self._square_attacked_by_player(move[2], threatening_player):
+                    continue
+                legal_moves.append(move)
+            # Moves that capture the attacking piece
+            elif move[2] == idx_attacking_king[0]:
+                legal_moves.append(move)
+        return legal_moves
 
-        # If the check is caused by an unblockable attack
-        if squares_attacking_king[0] in UNBLOCKABLE_ATTACKS_AT[king_idx]:
-            # Legal moves only move the king to a non-threatened square or capture the piece
-            for move in moves:
-                # King moves to an unthreatened square
-                if move[0] == king_idx:
-                    if self._square_attacked_by_player(move[2], threatening_player):
-                        continue
-                    legal_moves.append(move)
-
-                # Moves that capture the attacking piece
-                elif move[2] == squares_attacking_king[0]:
-                    legal_moves.append(move)
-            return legal_moves
-
-        # Otherwise the check must be caused by a blockable attack
+    def _filter_moves_blockable_check(self, moves: list[tuple], idx_attacking_king: list[int],
+                                      king_idx: int, threatening_player: bool) -> list[tuple]:
+        """Removes all the moves from moves that don't resolve a blockable check"""
+        legal_moves = []
         for move in moves:
             # King moves to an unthreatened square
             if move[0] == king_idx:
@@ -720,13 +720,29 @@ class MainEngine:
                 legal_moves.append(move)
 
             # Moves that capture the attacking piece
-            elif move[2] == squares_attacking_king[0]:
+            elif move[2] == idx_attacking_king[0]:
                 legal_moves.append(move)
 
             # Moves that block the attacking piece
-            elif move[2] in MOVES_TO_BLOCK_ATTACK_ON_FROM[king_idx][squares_attacking_king[0]]:
+            elif move[2] in MOVES_TO_BLOCK_ATTACK_ON_FROM[king_idx][idx_attacking_king[0]]:
                 legal_moves.append(move)
         return legal_moves
+
+    def _filter_moves_in_check(self, moves: list[tuple], idx_attacking_king: list[int],
+                               king_idx: int, threatening_player: bool) -> list[tuple]:
+        """Removes all the illegal moves in moves for when the active player is in check"""
+        # If the player is in double check
+        if len(idx_attacking_king) >= 2:
+            return self._filter_moves_double_check(moves, king_idx, threatening_player)
+
+        # If the check is caused by an unblockable attack
+        if idx_attacking_king[0] in UNBLOCKABLE_ATTACKS_AT[king_idx]:
+            return self._filter_moves_unblockable_check(moves, idx_attacking_king,
+                                                        king_idx, threatening_player)
+
+        # Otherwise the check must be caused by a blockable attack
+        return self._filter_moves_blockable_check(moves, idx_attacking_king,
+                                                  king_idx, threatening_player)
 
     def _move_reveals_check(self, move: tuple, king_idx: int,
                             threats_in_direciton: dict, friendly_pieces: set) -> bool:
@@ -760,10 +776,10 @@ class MainEngine:
 
         # There is a faster filter if the player is already in check
         king_idx = self.state[64 + self.state[-1]]
-        squares_attacking_king = self.squares_attacking_king()
-        if squares_attacking_king:
-            return self._filter_illegal_moves_while_in_check(
-                moves, squares_attacking_king, king_idx, not self.state[-1])
+        idx_attacking_king = self.squares_attacking_king()
+        if idx_attacking_king:
+            return self._filter_moves_in_check(
+                moves, idx_attacking_king, king_idx, not self.state[-1])
 
         legal_moves = []
         if self.state[-1]:
@@ -786,13 +802,32 @@ class MainEngine:
             legal_moves.append(move)
         return legal_moves
 
+    def _udpate_moves_to_remove_castle(self, moves: list[tuple]):
+        """Looks for moves that perform rook captures, removing appropriate castling rights"""
+        if self.state[66] == 0:
+            return moves
+
+        new_moves = []
+        for move in moves:
+            if len(move) > 8 and move[10] in CASTLE_RIGHT_REMOVAL:
+                new_moves.append(move[:5] + (move[5] & CASTLE_RIGHT_REMOVAL[move[10]],) + move[6:])
+            elif len(move) > 4 and move[2] in CASTLE_RIGHT_REMOVAL:
+                new_moves.append(move[:5] + (move[5] & CASTLE_RIGHT_REMOVAL[move[2]],) + move[6:])
+            elif move[2] in CASTLE_RIGHT_REMOVAL:
+                new_moves.append(move + (self.state[66],
+                                         self.state[66] & CASTLE_RIGHT_REMOVAL[move[2]],
+                                         self.state[67], -1))
+            else:
+                new_moves.append(move)
+        return new_moves
+
     def get_all_moves(self) -> list[tuple]:
         """Gets all the moves for the given state of the board"""
         if self.state[-1]:
             moves = self.get_white_moves()
         else:
             moves = self.get_black_moves()
-        return self._filter_illegal_moves(moves)
+        return self._filter_illegal_moves(self._udpate_moves_to_remove_castle(moves))
 
     def sufficient_material(self) -> bool:
         """Checks if there is sufficient mating material"""

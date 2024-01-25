@@ -57,3 +57,5 @@
 - v00.03.07:
     - Improved some logic branching for ~7% speedup.
         Considering ~43M states ran in 394s with profiler
+- v00.03.08:
+    - Found a bug where a capturing a rook did not remove castling rights. Now running at 410s with profiler for 43M states
