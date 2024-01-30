@@ -85,7 +85,7 @@ def test_execture_short_instruction(engine: MainEngine):
     assert engine.state[67] == STARTING_LIST_STATE[67]  # En Passant File
     assert engine.state[68] is False   # Player turn
     assert start_hash != hash(engine)  # The hash has udpated
-    assert engine.game_graph[start_hash] == (SHORT_INSTRUCTION, hash(engine))
+    assert engine.game_graph[start_hash] == [(SHORT_INSTRUCTION, hash(engine))]
 
 
 def test_execute_instructions(engine: MainEngine):
@@ -99,7 +99,7 @@ def test_execute_instructions(engine: MainEngine):
     assert engine.state[67] == 5       # En Passant File
     assert engine.state[68] is False   # Player turn
     assert start_hash != hash(engine)  # The hash has udpated
-    assert engine.game_graph[start_hash] == (SINGLE_INSTRUCTION, hash(engine))
+    assert engine.game_graph[start_hash] == [(SINGLE_INSTRUCTION, hash(engine))]
 
 
 def test_execute_double_instructions(engine: MainEngine):
@@ -115,7 +115,16 @@ def test_execute_double_instructions(engine: MainEngine):
     assert engine.state[67] == 2       # En Passant File
     assert engine.state[68] is False   # Player turn
     assert start_hash != hash(engine)  # The hash has udpated
-    assert engine.game_graph[start_hash] == (DOUBLE_INSTRUCTION, hash(engine))
+    assert engine.game_graph[start_hash] == [(DOUBLE_INSTRUCTION, hash(engine))]
+
+
+def test_game_graph(engine: MainEngine):
+    """Makes sure that the game_graph is appended too, not overwritten"""
+    moves = engine.get_all_moves()
+    for move in moves:
+        engine.execute_instructions(move)
+        engine.reverse_last_instruction()
+    assert len(engine.game_graph[hash(engine)]) == 20
 
 
 def test_reverse_last_instruction(engine: MainEngine):

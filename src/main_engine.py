@@ -25,7 +25,7 @@ class MainEngine:
     """See data_structures.md for detailed data structure information"""
     def __init__(self, state: list=None) -> None:
         self.state = state or STARTING_STATE.copy()
-        self.game_graph = {}
+        self.game_graph = defaultdict(list)
         self.state_stack = deque()
         self.hash_stack = deque()
         self.iter_counter = 0
@@ -130,7 +130,7 @@ class MainEngine:
         self.hash ^= ZOBRIST_TABLE[68][self.state[-1]]
 
         # Update the game graph
-        self.game_graph[self.hash_stack[-1]] = (instruction_set, hash(self))
+        self.game_graph[self.hash_stack[-1]].append((instruction_set, hash(self)))
 
     def reverse_last_instruction(self):
         """Reverses the last instruction on the stack"""
