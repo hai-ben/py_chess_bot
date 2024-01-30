@@ -25,6 +25,14 @@ class MainEngineAdapter:
         # Otherwise pick a move at random and execute it
         move = random.choice(self.current_moves)
         self.engine.execute_instructions(move)
+        # try:
+        #     self.engine.execute_instructions(move)
+        # except KeyError as e:
+        #     print(f"ENCOUNTERED ERROR: {e}")
+        #     print(f"MOVES TO GET HERE: {self.engine.state_stack}")
+        #     print(f"MOVE: {move}")
+        #     print(f"BOARD CURRENT STATE: {self.engine.state}")
+        #     print(f"VISUALIZED:\n{self.engine}")
 
         # If it repeats a state for a third time, it's a draw and try to exit
         if self.visited_state[hash(self.engine)] == 2:

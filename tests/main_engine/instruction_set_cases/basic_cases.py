@@ -13,7 +13,7 @@ BASIC_MOVE_TESTS = {
          [0b1100] * 8,
          [EP_FILE["b"]] * 8,
          [-1] * 8],
-        ("get_king_moves", [])
+        ("_get_white_king_moves", [SQUARE_IDX["e3"]])
     ),
     "WHITE_KING_ENEMY_TAKE": (
         [("e3", "w_king"), (W_KING_IDX, "e3"), (EP_IDX, "b"), ("e2", "b_pawn")],
@@ -25,7 +25,7 @@ BASIC_MOVE_TESTS = {
          [0b1100] * 8,
          [EP_FILE["b"]] * 8,
          [-1] * 8],
-        ("get_king_moves", [])
+        ("_get_white_king_moves", [SQUARE_IDX["e3"]])
     ),
     "WHITE_KING_FRIENDLY_TAKE": (
         [("e3", "w_king"), (W_KING_IDX, "e3"), (EP_IDX, "b"), ("f4", "w_pawn")],
@@ -37,7 +37,7 @@ BASIC_MOVE_TESTS = {
          [0b1100] * 7,
          [EP_FILE["b"]] * 7,
          [-1] * 7],
-        ("get_king_moves", [])
+        ("_get_white_king_moves", [SQUARE_IDX["e3"]])
     ),
     "BLACK_KING_EMPTY": (
         [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "c")],
@@ -49,7 +49,7 @@ BASIC_MOVE_TESTS = {
          [0b0011] * 8,
          [EP_FILE["c"]] * 8,
          [-1] * 8],
-        ("get_king_moves", [])
+        ("_get_black_king_moves", [SQUARE_IDX["e3"]])
     ),
     "BLACK_KING_ENEMY_TAKE": (
         [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "d"), ("e2", "w_pawn")],
@@ -61,7 +61,7 @@ BASIC_MOVE_TESTS = {
          [0b0011] * 8,
          [EP_FILE["d"]] * 8,
          [-1] * 8],
-        ("get_king_moves", [])
+        ("_get_black_king_moves", [SQUARE_IDX["e3"]])
     ),
     "BLACK_KING_ALLY_TAKE": (
         [(TURN_IDX, False), ("e3", "b_king"), (B_KING_IDX, "e3"), (EP_IDX, "e"), ("f4", "b_pawn")],
@@ -73,7 +73,7 @@ BASIC_MOVE_TESTS = {
          [0b0011] * 7,
          [EP_FILE["e"]] * 7,
          [-1] * 7],
-        ("get_king_moves", [])
+        ("_get_black_king_moves", [SQUARE_IDX["e3"]])
     ),
     "WHITE_KNIGHT_EMPTY": (
         [("c5", "w_knight")],
@@ -81,7 +81,7 @@ BASIC_MOVE_TESTS = {
          ["w_knight"] * 8,
          ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
          ["empty"] * 8],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_white", [SQUARE_IDX["c5"]])
     ),
     "WHITE_KNIGHT_ENEMY_TAKE": (
         [("c5", "w_knight"), ("a6", "b_queen")],
@@ -89,7 +89,7 @@ BASIC_MOVE_TESTS = {
          ["w_knight"] * 8,
          ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
          ["empty"] * 7 + ["b_queen"]],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_white", [SQUARE_IDX["c5"]])
     ),
     "WHITE_KNIGHT_ALLY_TAKE": (
         [("c5", "w_knight"), ("d3", "w_rook")],
@@ -97,7 +97,7 @@ BASIC_MOVE_TESTS = {
          ["w_knight"] * 7,
          ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
          ["empty"] * 7],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_white", [SQUARE_IDX["c5"]])
     ),
     "WHITE_KNIGHT_UNSET_EP": (
         [("c5", "w_knight"), (EP_IDX, EP_FILE["e"]), ("d3", "w_rook"), ("a6", "b_queen")],
@@ -109,7 +109,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 7,
          [EP_FILE["e"]] * 7,
          [-1] * 7],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_white", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_EMPTY": (
         [("c5", "b_knight"), (TURN_IDX, False)],
@@ -117,7 +117,7 @@ BASIC_MOVE_TESTS = {
          ["b_knight"] * 8,
          ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
          ["empty"] * 8],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_black", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_ENEMY_TAKE": (
         [("c5", "b_knight"), ("a6", "w_queen"), (TURN_IDX, False)],
@@ -125,7 +125,7 @@ BASIC_MOVE_TESTS = {
          ["b_knight"] * 8,
          ["b7", "d7", "b3", "d3", "a4", "e4", "e6", "a6"],
          ["empty"] * 7 + ["w_queen"]],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_black", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_ALLY_TAKE": (
         [("c5", "b_knight"), ("d3", "b_rook"), (TURN_IDX, False)],
@@ -133,7 +133,7 @@ BASIC_MOVE_TESTS = {
          ["b_knight"] * 7,
          ["b7", "d7", "b3", "a4", "e4", "e6", "a6"],
          ["empty"] * 7],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_black", [SQUARE_IDX["c5"]])
     ),
     "BLACK_KNIGHT_UNSET_EP": (
         [("c5", "b_knight"), (EP_IDX, EP_FILE["f"]), (TURN_IDX, False),
@@ -146,7 +146,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 7,
          [EP_FILE["f"]] * 7,
          [-1] * 7],
-        ("get_knight_moves", [SQUARE_IDX["c5"]])
+        ("_get_knight_moves_black", [SQUARE_IDX["c5"]])
     ),
     "WHITE_BISHOP_EMPTY": (
         [("f5", "w_bishop")],
@@ -154,7 +154,7 @@ BASIC_MOVE_TESTS = {
          ["w_bishop"] * 11,
          ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
          ["empty"] * 11],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_white", [SQUARE_IDX["f5"]])
     ),
     "WHITE_BISHOP_ENEMY_TAKE": (
         [("f5", "w_bishop"), ("d7", "b_queen")],
@@ -162,7 +162,7 @@ BASIC_MOVE_TESTS = {
          ["w_bishop"] * 10,
          ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7"],
          ["empty"] * 9 + ["b_queen"]],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_white", [SQUARE_IDX["f5"]])
     ),
     "WHITE_BISHOP_ALLY_TAKE": (
         [("f5", "w_bishop"), ("e4", "w_rook")],
@@ -170,7 +170,7 @@ BASIC_MOVE_TESTS = {
          ["w_bishop"] * 7,
          ["g6", "h7", "g4", "h3", "e6", "d7", "c8"],
          ["empty"] * 7],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_white", [SQUARE_IDX["f5"]])
     ),
     "WHITE_BISHOP_UNSET_EP": (
         [("f5", "w_bishop"), (EP_IDX, EP_FILE["a"]), ("e4", "w_rook"), ("d7", "b_queen")],
@@ -182,7 +182,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 6,
          [EP_FILE["a"]] * 6,
          [-1] * 6],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_white", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_EMPTY": (
         [("f5", "b_bishop"), (TURN_IDX, False)],
@@ -190,7 +190,7 @@ BASIC_MOVE_TESTS = {
          ["b_bishop"] * 11,
          ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7", "c8"],
          ["empty"] * 11],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_black", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_ENEMY_TAKE": (
         [("f5", "b_bishop"), ("d7", "w_queen"), (TURN_IDX, False)],
@@ -198,7 +198,7 @@ BASIC_MOVE_TESTS = {
          ["b_bishop"] * 10,
          ["g6", "h7", "e4", "d3", "c2", "b1", "g4", "h3", "e6", "d7"],
          ["empty"] * 9 + ["w_queen"]],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_black", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_ALLY_TAKE": (
         [("f5", "b_bishop"), ("e4", "b_rook"), (TURN_IDX, False)],
@@ -206,7 +206,7 @@ BASIC_MOVE_TESTS = {
          ["b_bishop"] * 7,
          ["g6", "h7", "g4", "h3", "e6", "d7", "c8"],
          ["empty"] * 7],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_black", [SQUARE_IDX["f5"]])
     ),
     "BLACK_BISHOP_UNSET_EP": (
         [("f5", "b_bishop"), (EP_IDX, EP_FILE["a"]), (TURN_IDX, False),
@@ -219,7 +219,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 6,
          [EP_FILE["a"]] * 6,
          [-1] * 6],
-        ("get_bishop_moves", [SQUARE_IDX["f5"]])
+        ("_get_bishop_moves_black", [SQUARE_IDX["f5"]])
     ),
     "WHITE_ROOK_BASICS": (
         [("e4", "w_rook"), ("e6", "b_knight"), ("b4", "w_pawn")],
@@ -227,7 +227,7 @@ BASIC_MOVE_TESTS = {
          ["w_rook"] * 10,
          ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
          ["b_knight"] + ["empty"] * 9],
-        ("get_rook_moves", [SQUARE_IDX["e4"]])
+        ("_get_rook_moves_white", [SQUARE_IDX["e4"]])
     ),
     "WHITE_ROOK_EP": (
         [("e4", "w_rook"), ("e6", "b_knight"), ("b4", "w_pawn"), (EP_IDX, EP_FILE["b"])],
@@ -239,7 +239,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 10,
          [EP_FILE["b"]] * 10,
          [-1] * 10],
-        ("get_rook_moves", [SQUARE_IDX["e4"]])
+        ("_get_rook_moves_white", [SQUARE_IDX["e4"]])
     ),
     "WHITE_ROOK_CASTLE_DISABLE_SHORT": (
         [("h1", "w_rook"), ("f1", "b_bishop"), ("h5", "w_pawn"), (EP_IDX, EP_FILE["d"])],
@@ -251,7 +251,7 @@ BASIC_MOVE_TESTS = {
          [0b1111 - CASTLE_STATES["w_short"]] * 5,
          [EP_FILE["d"]] * 5,
          [-1] * 5],
-        ("get_rook_moves", [SQUARE_IDX["h1"]])
+        ("_get_rook_moves_white", [SQUARE_IDX["h1"]])
     ),
     "WHITE_ROOK_CASTLE_DISABLE_LONG": (
         [("a1", "w_rook"), ("f1", "b_queen"), ("a6", "w_pawn"), (EP_IDX, EP_FILE["g"])],
@@ -263,7 +263,7 @@ BASIC_MOVE_TESTS = {
          [0b1111 - CASTLE_STATES["w_long"]] * 9,
          [EP_FILE["g"]] * 9,
          [-1] * 9],
-        ("get_rook_moves", [SQUARE_IDX["a1"]])
+        ("_get_rook_moves_white", [SQUARE_IDX["a1"]])
     ),
     "BLACK_ROOK_BASICS": (
         [("e4", "b_rook"), ("e6", "w_knight"), ("b4", "b_pawn"), (TURN_IDX, False)],
@@ -271,7 +271,7 @@ BASIC_MOVE_TESTS = {
          ["b_rook"] * 10,
          ["e6", "e5", "e3", "e2", "e1", "d4", "c4", "f4", "g4", "h4"],
          ["w_knight"] + ["empty"] * 9],
-        ("get_rook_moves", [SQUARE_IDX["e4"]])
+        ("_get_rook_moves_black", [SQUARE_IDX["e4"]])
     ),
     "BLACK_ROOK_EP": (
         [("e4", "b_rook"), ("e6", "w_knight"), ("b4", "b_pawn"),
@@ -284,7 +284,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 10 ,
          [EP_FILE["c"]] * 10,
          [-1] * 10],
-        ("get_rook_moves", [SQUARE_IDX["e4"]])
+        ("_get_rook_moves_black", [SQUARE_IDX["e4"]])
     ),
     "BLACK_ROOK_CASTLE_DISABLE_SHORT": (
         [("h8", "b_rook"), ("f8", "w_bishop"), ("h4", "b_pawn"),
@@ -297,7 +297,7 @@ BASIC_MOVE_TESTS = {
          [0b1111 - CASTLE_STATES["b_short"]] * 5,
          [EP_FILE["d"]] * 5,
          [-1] * 5],
-        ("get_rook_moves", [SQUARE_IDX["h8"]])
+        ("_get_rook_moves_black", [SQUARE_IDX["h8"]])
     ),
     "BLACK_ROOK_CASTLE_DISABLE_LONG": (
         [("a8", "b_rook"), ("f8", "w_queen"), ("a6", "b_pawn"),
@@ -310,7 +310,7 @@ BASIC_MOVE_TESTS = {
          [0b1111 - CASTLE_STATES["b_long"]] * 6,
          [EP_FILE["g"]] * 6,
          [-1] * 6],
-        ("get_rook_moves", [SQUARE_IDX["a8"]])
+        ("_get_rook_moves_black", [SQUARE_IDX["a8"]])
     ),
     "WHITE_QUEEN_BASIC": (
         [("d5", "w_queen"), ("d3", "b_rook"), ("f7", "w_king")],
@@ -319,7 +319,7 @@ BASIC_MOVE_TESTS = {
          ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
           "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
          ["b_rook"] + ["empty"] * 22],
-        ("get_queen_moves", [SQUARE_IDX["d5"]])
+        ("_get_queen_moves_white", [SQUARE_IDX["d5"]])
     ),
     "WHITE_QUEEN_EP": (
         [("d5", "w_queen"), ("d3", "b_rook"), ("f7", "w_king"), (EP_IDX, EP_FILE["h"])],
@@ -332,7 +332,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 23,
          [EP_FILE["h"]] * 23,
          [-1] * 23],
-        ("get_queen_moves", [SQUARE_IDX["d5"]])
+        ("_get_queen_moves_white", [SQUARE_IDX["d5"]])
     ),
     "BLACK_QUEEN_BASIC": (
         [("d5", "b_queen"), ("d3", "w_rook"), ("f7", "b_king"), (TURN_IDX, False)],
@@ -341,7 +341,7 @@ BASIC_MOVE_TESTS = {
          ["d3", "d4", "d6", "d7", "d8", "a5", "b5", "c5", "e5", "f5", "g5", "h5",
           "a8", "b7", "c6", "e4", "f3", "g2", "h1", "a2", "b3", "c4", "e6"],
          ["w_rook"] + ["empty"] * 22],
-        ("get_queen_moves", [SQUARE_IDX["d5"]])
+        ("_get_queen_moves_black", [SQUARE_IDX["d5"]])
     ),
     "BLACK_QUEEN_EP": (
         [("d5", "b_queen"), ("d3", "w_rook"), ("f7", "b_king"),
@@ -355,7 +355,7 @@ BASIC_MOVE_TESTS = {
          [0b1111] * 23,
          [EP_FILE["h"]] * 23,
          [-1] * 23],
-        ("get_queen_moves", [SQUARE_IDX["d5"]])
+        ("_get_queen_moves_black", [SQUARE_IDX["d5"]])
     ),
     "WHITE_PAWN_SINGLE_MOVE_SIMPLE": (
         [("h3", "w_pawn")],
@@ -567,13 +567,13 @@ BASIC_MOVE_TESTS = {
     "WHITE_CASTLE_MOVES_NO_RIGHTS": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0)],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CASTLE_MOVES_NO_RIGHTS": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
          (CASTLE_IDX, 0), (TURN_IDX, False)],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "WHITE_CASTLE_MOVES_SHORT": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0b1101)],
@@ -589,7 +589,7 @@ BASIC_MOVE_TESTS = {
          ["w_rook"],
          ["f1"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CASTLE_MOVES_SHORT": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
@@ -606,7 +606,7 @@ BASIC_MOVE_TESTS = {
          ["b_rook"],
          ["f8"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "WHITE_CASTLE_MOVES_LONG": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (CASTLE_IDX, 0b1010)],
@@ -622,7 +622,7 @@ BASIC_MOVE_TESTS = {
          ["w_rook"],
          ["d1"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CASTLE_MOVES_LONG": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
@@ -639,7 +639,7 @@ BASIC_MOVE_TESTS = {
          ["b_rook"],
          ["d8"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "WHITE_CASTLE_MOVES_HAPPY": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook")],
@@ -655,7 +655,7 @@ BASIC_MOVE_TESTS = {
          ["w_rook"] * 2,
          ["f1", "d1"],
          ["empty"] * 2],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CASTLE_MOVES_HAPPY": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"), (TURN_IDX, False)],
@@ -671,25 +671,25 @@ BASIC_MOVE_TESTS = {
          ["b_rook"] * 2,
          ["f8", "d8"],
          ["empty"] * 2],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "WHITE_CASTLE_MOVES_BLOCKED": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
          ("f1", "w_bishop"), ("b1", "b_knight"),],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CASTLE_MOVES_BLOCKED": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
          ("f8", "w_bishop"), ("b8", "b_knight"), (TURN_IDX, False)],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "WHITE_CANT_CASTLE_IN_CHECK": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"), (W_KING_IDX, "e1"),
          ("e8", "b_queen")],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_SHORT": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
@@ -706,7 +706,7 @@ BASIC_MOVE_TESTS = {
          ["w_rook"],
          ["d1"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "WHITE_CANT_CASTLE_ACROSS_THREATENED_SQUARES_LONG": (
         [("e1", "w_king"), ("a1", "w_rook"), ("h1", "w_rook"),
@@ -723,13 +723,13 @@ BASIC_MOVE_TESTS = {
          ["w_rook"],
          ["f1"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_white", [])
     ),
     "BLACK_CANT_CASTLE_IN_CHECK": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
          (B_KING_IDX, "e8"), ("h5", "w_bishop"), (TURN_IDX, False)],
         [],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "BLACK_CANT_CASTLE_ACROSS_THREATENED_SQUARES_SHORT": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
@@ -746,7 +746,7 @@ BASIC_MOVE_TESTS = {
          ["b_rook"],
          ["d8"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
     "BLACK_CANT_CASTLE_ACROSS_THREATENED_SQUARES_LONG": (
         [("e8", "b_king"), ("a8", "b_rook"), ("h8", "b_rook"),
@@ -763,6 +763,6 @@ BASIC_MOVE_TESTS = {
          ["b_rook"],
          ["f8"],
          ["empty"]],
-        ("get_castle_moves", [])
+        ("_get_castle_moves_black", [])
     ),
 }

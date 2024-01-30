@@ -36,9 +36,26 @@
         Ran 10 with maximum 100 considering 32056 moves
         Ran in 1.3503s with peak memory usage 0.1MB of memory at peak.
         The program failed to release 0.0MB after execution.
-- v00.03.06:
+- v00.03.01:
     - Switched over to a graph-based engine for faster read/writes
     - Added seeds for the random library to make comparisons consistent
     - New Performance:
         Ran 10 games considering 28915 moves
         Graph engine ran in 0.7498s with peak memory usage 44320 bytes of memory at peak.
+- v00.03.02:
+    - Switched to checking for illegal positions before moves are made instead of after
+        Ran 10 games considering 30591 moves
+        Graph engine ran in 0.1647s with peak memory usage 43736 bytes of memory at peak.
+        The program failed to release 15344 bytes after execution.
+    - Difference is likely due to bugs found in some of the move_dict_generator functions
+- v00.03.03:
+    - Dictionarized the _move_reveals_check function to get a ~10% speedup
+        Considering ~43M states is ran at 459s in main engine vs 500s for the last commit.  
+- v00.03.05:
+    - Stopped using my custom __iter__ function for another 10% speedup.
+        Considering ~43M states ran in 423s with profiler
+- v00.03.07:
+    - Improved some logic branching for ~7% speedup.
+        Considering ~43M states ran in 394s with profiler
+- v00.03.08:
+    - Found a bug where a capturing a rook did not remove castling rights. Now running at 410s with profiler for 43M states
