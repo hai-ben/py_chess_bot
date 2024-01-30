@@ -9,7 +9,7 @@ This is just a place for me to mess around with python, ML, and code performance
         - **DONE** How the graph will be tracked
     - **DONE** Skeleton suite of unit tests from small_board and board tests
     - **DONE** Fill-in test-suites and fucntionality
-    - Basic engine should be able to at least generate 100k states per second before proceeding to bot building
+    - **DONE** Basic engine should be able to at least generate 100k states per second before proceeding to bot building *(This code is now able to generate 220k moves/s and visit 7.5k states/s)*
 
 - Train an extremely basic chess bot:
     - Prototype a game-playing framework, using basic strategies
