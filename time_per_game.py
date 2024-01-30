@@ -18,7 +18,7 @@ def run_games(n_games=10, max_turns=100, adapter=GameState):
             total_moves_considered += new_moves_count
             if new_moves_count == 0:
                 break
-        if i % 20 == 0:
+        if i % 50 == 0:
             print(f"Completed {i} games out of {n_games}")
     print(f"Ran {n_games} games considering {total_moves_considered} moves")
 
